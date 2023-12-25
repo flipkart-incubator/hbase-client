@@ -1,0 +1,14 @@
+.idea
+*.classpath
+*.project
+*.settings/
+target
+*.iml
+*.ipr
+*.iws
+*.jsr
+*.class
+*.pyc
+.DS_Store
+*.sw*
+dependency-reduced-pom.xml

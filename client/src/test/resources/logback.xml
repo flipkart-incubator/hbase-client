@@ -1,0 +1,101 @@
+<configuration>
+    <property name="async.discardingThreshold" value="100"/>
+    <property name="neverBlock" value="true"/>
+    <property name="async.queueSize" value="512"/>
+    <property name="log.dir" value="logs"/>
+    <property name="log.pattern"
+              value="%d{dd-MM-yyyy HH:mm:ss.SSS} %X{X-Trace-ID} %X{X-Client-Trace-ID} %X{X-Server-Request-ID} %X{X-Client-IP} %X{X-Server-IP} %X{X-Client} [%thread] %-5level %logger{36} - %msg%n"/>
+    <property name="errorLog.pattern"
+              value="%d{dd-MM-yyyy HH:mm:ss.SSS} %X{X-Trace-ID} %X{X-Client-Trace-ID} %X{X-Server-Request-ID} %X{X-Client-IP} %X{X-Server-IP} %X{X-Client} [%thread] %-5level %logger{36} - %msg%n%throwable{short}%n"/>
+    <property name="log.maxHistory" value="2"/>
+    <property name="log.default.maxFileSize" value="600MB"/>
+    <property name="log.error.maxFileSize" value="50MB"/>
+    <property name="log.tick.maxFileSize" value="10MB"/>
+    <property name="log.payment.maxFileSize" value="30MB"/>
+    <property name="log.payload.maxFileSize" value="400MB"/>
+    <property name="log.fatal.maxFileSize" value="5MB"/>
+
+    <jmxConfigurator/>
+
+    <appender name="INFO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${log.dir}/default.log</File>
+        <Append>true</Append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${log.dir}/default.%i.log</fileNamePattern>
+            <maxIndex>${log.maxHistory}</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>${log.default.maxFileSize}</maxFileSize>
+        </triggeringPolicy>
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ASYNC-INFO" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>${async.discardingThreshold}</discardingThreshold>
+        <neverBlock>${neverBlock}</neverBlock>
+        <queueSize>${async.queueSize}</queueSize>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <appender-ref ref="INFO"/>
+    </appender>
+
+    <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.dir}/error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${log.dir}/error.%i.log</fileNamePattern>
+            <maxIndex>${log.maxHistory}</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>${log.error.maxFileSize}</maxFileSize>
+        </triggeringPolicy>
+        <encoder>
+            <pattern>${errorLog.pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ASYNC-ERROR" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>${async.discardingThreshold}</discardingThreshold>
+        <neverBlock>${neverBlock}</neverBlock>
+        <queueSize>${async.queueSize}</queueSize>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+
+        <appender-ref ref="ERROR"/>
+    </appender>
+
+    <appender name="TRACE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.dir}/trace.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${log.dir}/trace.%i.log</fileNamePattern>
+            <maxIndex>${log.maxHistory}</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>${log.error.maxFileSize}</maxFileSize>
+        </triggeringPolicy>
+        <encoder>
+            <pattern>${errorLog.pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ASYNC-TRACE" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>${async.discardingThreshold}</discardingThreshold>
+        <neverBlock>${neverBlock}</neverBlock>
+        <queueSize>${async.queueSize}</queueSize>
+
+        <appender-ref ref="TRACE"/>
+    </appender>
+
+    <root level="TRACE">
+        <appender-ref ref="TRACE"/>
+        <appender-ref ref="INFO"/>
+        <appender-ref ref="ERROR"/>
+    </root>
+</configuration>
