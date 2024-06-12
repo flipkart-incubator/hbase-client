@@ -1,11 +1,12 @@
 package com.flipkart.yak.client.pipelined.config;
 
 import com.flipkart.yak.client.config.SiteConfig;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class RegionConfig {
+public class RegionConfig implements Serializable {
   private Map<String, SiteConfig> sites = new HashMap<>();
 
   public RegionConfig() {
