@@ -10,7 +10,7 @@
         <logback.version>1.2.3</logback.version>
         <junit.version>4.13.1</junit.version>
         <powermock.version>1.7.4</powermock.version>
-        <hbase.client.version>2.5.7</hbase.client.version>
+        <hbase.client.version>2.6.1</hbase.client.version>
         <google.guava.version>23.0</google.guava.version>
         <sonar.coverage.exclusions>**/apidocs/**/*</sonar.coverage.exclusions>
         <sonar.coverage.jacoco.xmlReportPaths>
@@ -21,7 +21,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>client-modules</artifactId>
     <groupId>com.flipkart.yak</groupId>
-    <version>4.0.2</version>
+    <version>FCC-1.0.5</version>
     <packaging>pom</packaging>
     <modules>
         <module>client</module>
