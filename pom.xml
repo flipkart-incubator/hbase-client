@@ -21,7 +21,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>client-modules</artifactId>
     <groupId>com.flipkart.yak</groupId>
-    <version>FCC-1.0.5</version>
+    <version>4.0.3</version>
     <packaging>pom</packaging>
     <modules>
         <module>client</module>
