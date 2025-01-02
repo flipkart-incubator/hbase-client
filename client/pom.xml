@@ -11,7 +11,7 @@
     <parent>
         <artifactId>client-modules</artifactId>
         <groupId>com.flipkart.yak</groupId>
-        <version>4.0.2</version>
+        <version>FCC-1.0.5</version>
     </parent>
 
     <artifactId>client</artifactId>
