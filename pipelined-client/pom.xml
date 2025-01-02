@@ -7,13 +7,13 @@
     <parent>
         <artifactId>client-modules</artifactId>
         <groupId>com.flipkart.yak</groupId>
-        <version>4.0.2</version>
+        <version>FCC-1.0.5</version>
     </parent>
     <dependencies>
         <dependency>
             <groupId>com.flipkart.yak</groupId>
             <artifactId>client</artifactId>
-            <version>4.0.2</version>
+            <version>FCC-1.0.5</version>
         </dependency>
         <dependency>
             <groupId>com.netflix.hystrix</groupId>
