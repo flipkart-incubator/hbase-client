@@ -13,7 +13,7 @@
         <dependency>
             <groupId>com.flipkart.yak</groupId>
             <artifactId>client</artifactId>
-            <version>FCC-1.0.5</version>
+            <version>4.0.3</version>
         </dependency>
         <dependency>
             <groupId>com.netflix.hystrix</groupId>
