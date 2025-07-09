@@ -11,7 +11,7 @@ import com.flipkart.yak.client.pipelined.exceptions.NoSiteAvailableToHandleExcep
 import com.flipkart.yak.client.pipelined.intent.IntentStoreClient;
 import com.flipkart.yak.client.pipelined.intent.YakIntentStoreClientImpl;
 import com.flipkart.yak.client.pipelined.models.*;
-import com.flipkart.yak.client.pipelined.models.Region;
+import com.flipkart.yak.client.pipelined.models.DataCenter;
 import com.flipkart.yak.client.pipelined.route.HotRouter;
 import com.flipkart.yak.client.pipelined.route.IntentRoute;
 import com.flipkart.yak.client.pipelined.route.StoreRoute;
@@ -214,7 +214,7 @@ public abstract class PipelinedClientBaseTest {
     RegionConfig region2Config = new RegionConfig(new HashMap<>());
     region2Config.addSite(SITEA, getStoreConfigRegion2());
 
-    Map<Region, RegionConfig> regions = new HashMap<>();
+    Map<DataCenter, RegionConfig> regions = new HashMap<>();
     regions.put(Region.REGION_1, region1Config);
     regions.put(Region.REGION_2, region2Config);
     multiRegionStoreConfig.setRegions(regions);

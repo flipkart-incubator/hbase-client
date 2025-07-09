@@ -1,11 +1,7 @@
 package com.flipkart.yak.client.pipelined;
 
-import com.flipkart.yak.client.pipelined.models.IntentConsistency;
-import com.flipkart.yak.client.pipelined.models.MasterSlaveReplicaSet;
-import com.flipkart.yak.client.pipelined.models.ReadConsistency;
-import com.flipkart.yak.client.pipelined.models.SiteId;
-import com.flipkart.yak.client.pipelined.models.WriteConsistency;
-import com.flipkart.yak.client.pipelined.models.Region;
+import com.flipkart.yak.client.pipelined.models.*;
+import com.flipkart.yak.client.pipelined.models.DataCenter;
 import com.flipkart.yak.client.pipelined.route.IntentRoute;
 import com.flipkart.yak.client.pipelined.route.Route;
 import com.flipkart.yak.client.pipelined.route.StoreRoute;
@@ -22,22 +18,22 @@ public class PipelinedStoreUtils {
 
   static List<SiteId> getSitesToWrite(Route route, MasterSlaveReplicaSet replicaSet) {
     List<SiteId> sites = new ArrayList<>();
-    Region currentRegion = route.getMyCurrentRegion();
+    DataCenter currentDataCenter = route.getMyCurrentRegion();
     StoreRoute storeRoute = (StoreRoute) route;
     WriteConsistency consistency = storeRoute.getWriteConsistency();
 
     if (consistency.equals(WriteConsistency.LOCAL_PREFERRED)) {
-      if (currentRegion.equals(replicaSet.getPrimarySite().region)) {
+      if (currentDataCenter.equals(replicaSet.getPrimarySite().dataCenter)) {
         sites.add(replicaSet.getPrimarySite());
-        sites.addAll(replicaSet.getSecondarySites().stream().filter(site -> (currentRegion.equals(site.region)))
+        sites.addAll(replicaSet.getSecondarySites().stream().filter(site -> (currentDataCenter.equals(site.dataCenter)))
             .collect(Collectors.toList()));
-        sites.addAll(replicaSet.getSecondarySites().stream().filter(site -> (!currentRegion.equals(site.region)))
+        sites.addAll(replicaSet.getSecondarySites().stream().filter(site -> (!currentDataCenter.equals(site.dataCenter)))
             .collect(Collectors.toList()));
       } else {
-        sites.addAll(replicaSet.getSecondarySites().stream().filter(site -> (currentRegion.equals(site.region)))
+        sites.addAll(replicaSet.getSecondarySites().stream().filter(site -> (currentDataCenter.equals(site.dataCenter)))
             .collect(Collectors.toList()));
         sites.add(replicaSet.getPrimarySite());
-        sites.addAll(replicaSet.getSecondarySites().stream().filter(site -> (!currentRegion.equals(site.region)))
+        sites.addAll(replicaSet.getSecondarySites().stream().filter(site -> (!currentDataCenter.equals(site.dataCenter)))
             .collect(Collectors.toList()));
       }
     } else if (consistency.equals(WriteConsistency.PRIMARY_PREFERRED)) {
@@ -51,28 +47,28 @@ public class PipelinedStoreUtils {
 
   static List<SiteId> getSitesToRead(Route route, MasterSlaveReplicaSet replicaSet) {
     List<SiteId> sites = new ArrayList<>();
-    Region currentRegion = route.getMyCurrentRegion();
+    DataCenter currentDataCenter = route.getMyCurrentRegion();
     StoreRoute storeRoute = (StoreRoute) route;
     ReadConsistency consistency = storeRoute.getReadConsistency();
     if (consistency.equals(ReadConsistency.LOCAL_PREFERRED)) {
-      if (currentRegion.equals(replicaSet.getPrimarySite().region)) {
+      if (currentDataCenter.equals(replicaSet.getPrimarySite().dataCenter)) {
         sites.add(replicaSet.getPrimarySite());
-        sites.addAll(replicaSet.getSecondarySites().stream().filter(site -> (currentRegion.equals(site.region)))
+        sites.addAll(replicaSet.getSecondarySites().stream().filter(site -> (currentDataCenter.equals(site.dataCenter)))
             .collect(Collectors.toList()));
-        sites.addAll(replicaSet.getSecondarySites().stream().filter(site -> (!currentRegion.equals(site.region)))
+        sites.addAll(replicaSet.getSecondarySites().stream().filter(site -> (!currentDataCenter.equals(site.dataCenter)))
             .collect(Collectors.toList()));
       } else {
-        sites.addAll(replicaSet.getSecondarySites().stream().filter(site -> (currentRegion.equals(site.region)))
+        sites.addAll(replicaSet.getSecondarySites().stream().filter(site -> (currentDataCenter.equals(site.dataCenter)))
             .collect(Collectors.toList()));
         sites.add(replicaSet.getPrimarySite());
-        sites.addAll(replicaSet.getSecondarySites().stream().filter(site -> (!currentRegion.equals(site.region)))
+        sites.addAll(replicaSet.getSecondarySites().stream().filter(site -> (!currentDataCenter.equals(site.dataCenter)))
             .collect(Collectors.toList()));
       }
     } else if (consistency.equals(ReadConsistency.LOCAL_MANDATORY)) {
-      if (currentRegion.equals(replicaSet.getPrimarySite().region)) {
+      if (currentDataCenter.equals(replicaSet.getPrimarySite().dataCenter)) {
         sites.add(replicaSet.getPrimarySite());
       }
-      sites.addAll(replicaSet.getSecondarySites().stream().filter(siteId -> siteId.region.equals(currentRegion))
+      sites.addAll(replicaSet.getSecondarySites().stream().filter(siteId -> siteId.dataCenter.equals(currentDataCenter))
           .collect(Collectors.toList()));
     } else if (consistency.equals(ReadConsistency.PRIMARY_PREFERRED)) {
       sites.add(replicaSet.getPrimarySite());
@@ -86,11 +82,11 @@ public class PipelinedStoreUtils {
   @SuppressWarnings("java:S3358")
   static List<SiteId> getIntentSites(Route route, MasterSlaveReplicaSet replicaSet) {
     List<SiteId> sites = new ArrayList<>();
-    Region currentRegion = route.getMyCurrentRegion();
+    DataCenter currentDataCenter = route.getMyCurrentRegion();
 
     IntentRoute intentRoute = (IntentRoute) route;
     IntentConsistency consistency = intentRoute.getWriteConsistency();
-    replicaSet.getSecondarySites().sort((o1, o2) -> (o1.region.equals(o2.region)) ? 0 : ((o1.region.equals(currentRegion)) ? 1 : -1));
+    replicaSet.getSecondarySites().sort((o1, o2) -> (o1.dataCenter.equals(o2.dataCenter)) ? 0 : ((o1.dataCenter.equals(currentDataCenter)) ? 1 : -1));
     if (consistency.equals(IntentConsistency.PRIMARY_MANDATORY)) {
       sites.add(replicaSet.getPrimarySite());
     }

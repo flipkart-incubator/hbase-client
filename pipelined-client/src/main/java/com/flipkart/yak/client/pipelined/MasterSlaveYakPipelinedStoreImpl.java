@@ -22,7 +22,7 @@ import com.flipkart.yak.client.pipelined.models.PipelineConfig;
 import com.flipkart.yak.client.pipelined.models.PipelinedResponse;
 import com.flipkart.yak.client.pipelined.models.SiteId;
 import com.flipkart.yak.client.pipelined.models.StoreOperationResponse;
-import com.flipkart.yak.client.pipelined.models.Region;
+import com.flipkart.yak.client.pipelined.models.DataCenter;
 import com.flipkart.yak.client.pipelined.route.IntentRoute;
 import com.flipkart.yak.client.pipelined.route.Route;
 import com.flipkart.yak.distributor.KeyDistributor;
@@ -131,13 +131,13 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
     MultiRegionStoreConfig multiRegionStoreConfig = config.getMultiRegionStoreConfig();
     Optional<Map<String, KeyDistributor>> keyDistributorMapOptional = config.getKeyDistributorMap();
     SiteConfig defaultConfig = multiRegionStoreConfig.getDefaultConfig();
-    for (Region regionKey : multiRegionStoreConfig.getRegions().keySet()) {
-      RegionConfig regionConfig = multiRegionStoreConfig.getRegions().get(regionKey);
+    for (DataCenter dataCenterKey : multiRegionStoreConfig.getRegions().keySet()) {
+      RegionConfig regionConfig = multiRegionStoreConfig.getRegions().get(dataCenterKey);
 
       for (Map.Entry<String, SiteConfig> entry : regionConfig.getSites().entrySet()) {
         String siteName = entry.getKey();
         SiteConfig siteConfig = mergeDefaultConfigWithSiteConfig(entry.getValue(), defaultConfig);
-        SiteId siteId = new SiteId(siteName, regionKey);
+        SiteId siteId = new SiteId(siteName, dataCenterKey);
         if (!clients.containsKey(siteId)) {
           LOG.info("Setting up async store client with site: {}", siteId);
           int retriesLeft = config.getSiteBootstrapRetryCount();
