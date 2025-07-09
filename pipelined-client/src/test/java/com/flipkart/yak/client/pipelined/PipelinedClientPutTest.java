@@ -7,7 +7,7 @@ import com.flipkart.yak.models.StoreData;
 import com.flipkart.yak.models.StoreDataBuilder;
 import com.flipkart.yak.client.pipelined.exceptions.NoSiteAvailableToHandleException;
 import com.flipkart.yak.client.pipelined.exceptions.PipelinedStoreException;
-import com.flipkart.yak.client.pipelined.models.Region;
+import com.flipkart.yak.client.pipelined.models.DataCenter;
 import com.flipkart.yak.client.pipelined.route.StoreRoute;
 import java.io.IOException;
 import java.util.Arrays;

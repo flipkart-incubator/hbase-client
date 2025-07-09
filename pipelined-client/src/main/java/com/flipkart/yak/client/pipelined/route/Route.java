@@ -1,21 +1,21 @@
 package com.flipkart.yak.client.pipelined.route;
 
-import com.flipkart.yak.client.pipelined.models.Region;
+import com.flipkart.yak.client.pipelined.models.DataCenter;
 import com.flipkart.yak.client.pipelined.models.ReplicaSet;
 
 @SuppressWarnings("java:S3740")
 public abstract class Route<T extends ReplicaSet, U> {
-  private final Region myCurrentRegion;
+  private final DataCenter myCurrentDataCenter;
 
   private final HotRouter<T, U> hotRouter;
 
-  public Route(Region myCurrentRegion, HotRouter hotRouter) {
+  public Route(DataCenter myCurrentDataCenter, HotRouter hotRouter) {
     this.hotRouter = hotRouter;
-    this.myCurrentRegion = myCurrentRegion;
+    this.myCurrentDataCenter = myCurrentDataCenter;
   }
 
-  public Region getMyCurrentRegion() {
-    return myCurrentRegion;
+  public DataCenter getMyCurrentRegion() {
+    return myCurrentDataCenter;
   }
 
   public HotRouter<T, U> getHotRouter() {
