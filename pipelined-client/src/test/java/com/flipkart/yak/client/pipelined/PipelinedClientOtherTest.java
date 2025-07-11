@@ -5,7 +5,6 @@ import com.flipkart.yak.client.exceptions.StoreException;
 import com.flipkart.yak.client.pipelined.exceptions.NoSiteAvailableToHandleException;
 import com.flipkart.yak.client.pipelined.exceptions.PipelinedClientInitializationException;
 import com.flipkart.yak.client.pipelined.models.*;
-import com.flipkart.yak.client.pipelined.models.DataCenter;
 import com.flipkart.yak.client.pipelined.route.StoreRoute;
 import com.flipkart.yak.models.GetDataBuilder;
 import com.flipkart.yak.models.GetRow;
@@ -131,7 +130,7 @@ public class PipelinedClientOtherTest extends PipelinedClientBaseTest {
       return null;
     });
     when(region1SiteAClient.put(eq(data))).thenReturn(responseFuture);
-    store.put(data, routeKeyChOptional, intentData, hystrixSettings, responseHandler(future));
+    store.put(data, routeMetaChOptional, intentData, hystrixSettings, responseHandler(future));
     try {
       future.get();
       assertTrue("Should have thrown exception", true);

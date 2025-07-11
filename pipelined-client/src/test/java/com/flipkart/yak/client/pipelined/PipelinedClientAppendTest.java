@@ -5,7 +5,6 @@ import com.flipkart.yak.client.exceptions.StoreException;
 import com.flipkart.yak.client.pipelined.exceptions.NoSiteAvailableToHandleException;
 import com.flipkart.yak.client.pipelined.exceptions.PipelinedStoreException;
 import com.flipkart.yak.client.pipelined.models.*;
-import com.flipkart.yak.client.pipelined.models.DataCenter;
 import com.flipkart.yak.client.pipelined.route.StoreRoute;
 import com.flipkart.yak.models.ResultMap;
 import com.flipkart.yak.models.StoreData;
@@ -58,7 +57,7 @@ public class PipelinedClientAppendTest extends PipelinedClientBaseTest {
   @Test public void testAppendToRegion1SiteA() throws ExecutionException, InterruptedException {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<ResultMap>>> future = new CompletableFuture<>();
     when(region1SiteAClient.append(eq(data))).thenReturn(CompletableFuture.completedFuture(resultMap));
-    store.append(data, routeKeyChOptional, intentData, hystrixSettings, responseHandler(future));
+    store.append(data, routeMetaChOptional, intentData, hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -75,7 +74,7 @@ public class PipelinedClientAppendTest extends PipelinedClientBaseTest {
           throws ExecutionException, InterruptedException, TimeoutException {
     when(region1SiteAClient.append(eq(data))).thenReturn(CompletableFuture.completedFuture(resultMap));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response =
-        syncStore.append(data, routeKeyChOptional, intentData, hystrixSettings);
+        syncStore.append(data, routeMetaChOptional, intentData, hystrixSettings);
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
     }
@@ -90,7 +89,7 @@ public class PipelinedClientAppendTest extends PipelinedClientBaseTest {
   @Test public void testAppendToRegion1SiteAWithNoIntent() throws ExecutionException, InterruptedException {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<ResultMap>>> future = new CompletableFuture<>();
     when(region1SiteAClient.append(eq(data))).thenReturn(CompletableFuture.completedFuture(resultMap));
-    store.append(data, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.append(data, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -112,7 +111,7 @@ public class PipelinedClientAppendTest extends PipelinedClientBaseTest {
     respFuture.completeExceptionally(new PipelinedStoreException(errorMessage));
     when(region2SiteAClient.put(eq(intentStoreData))).thenReturn(respFuture);
 
-    store.append(data, routeKeyChOptional, intentData, hystrixSettings, responseHandler(future));
+    store.append(data, routeMetaChOptional, intentData, hystrixSettings, responseHandler(future));
     try {
       future.get();
       assertTrue("Should have thrown exception", false || (!runWithIntent));
@@ -128,7 +127,7 @@ public class PipelinedClientAppendTest extends PipelinedClientBaseTest {
   @Test public void testAppendToRegion2SiteA() throws ExecutionException, InterruptedException {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<ResultMap>>> future = new CompletableFuture<>();
     when(region2SiteAClient.append(eq(data))).thenReturn(CompletableFuture.completedFuture(resultMap));
-    store.append(data, routeKeyHydOptional, intentData, hystrixSettings, responseHandler(future));
+    store.append(data, routeMetaHydOptional, intentData, hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -150,7 +149,7 @@ public class PipelinedClientAppendTest extends PipelinedClientBaseTest {
     respFuture.completeExceptionally(new PipelinedStoreException(errorMessage));
     when(region1SiteAClient.append(eq(data))).thenReturn(respFuture);
 
-    store.append(data, routeKeyChOptional, intentData, hystrixSettings, responseHandler(future));
+    store.append(data, routeMetaChOptional, intentData, hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
 
     assertTrue("Should have null response", (response.getOperationResponse().getValue() == null));
@@ -171,7 +170,7 @@ public class PipelinedClientAppendTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.append(eq(data))).thenReturn(respFuture);
 
     PipelinedResponse<StoreOperationResponse<ResultMap>> response =
-        syncStore.append(data, routeKeyChOptional, intentData, hystrixSettings);
+        syncStore.append(data, routeMetaChOptional, intentData, hystrixSettings);
 
     assertTrue("Should have null response", (response.getOperationResponse().getValue() == null));
     assertTrue("Should not throw exception", (response.getOperationResponse().getError() != null));
@@ -211,7 +210,7 @@ public class PipelinedClientAppendTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<ResultMap>>> future = new CompletableFuture<>();
     when(region1SiteAClient.append(eq(data))).thenReturn(CompletableFuture.completedFuture(resultMap));
     when(region1SiteBClient.append(eq(data))).thenReturn(CompletableFuture.completedFuture(resultMap));
-    store.append(data, routeKeyChOptional, intentData, hystrixSettings, responseHandler(future));
+    store.append(data, routeMetaChOptional, intentData, hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -236,7 +235,7 @@ public class PipelinedClientAppendTest extends PipelinedClientBaseTest {
     respFuture.completeExceptionally(new PipelinedStoreException("Failed"));
     when(region1SiteAClient.append(eq(data))).thenReturn(respFuture);
     when(region1SiteBClient.append(eq(data))).thenReturn(CompletableFuture.completedFuture(resultMap));
-    store.append(data, routeKeyChOptional, intentData, hystrixSettings, responseHandler(future));
+    store.append(data, routeMetaChOptional, intentData, hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -262,7 +261,7 @@ public class PipelinedClientAppendTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.append(eq(data))).thenReturn(respFuture);
     when(region1SiteBClient.append(eq(data))).thenReturn(respFuture);
     when(region2SiteAClient.append(eq(data))).thenReturn(CompletableFuture.completedFuture(resultMap));
-    store.append(data, routeKeyChOptional, intentData, hystrixSettings, responseHandler(future));
+    store.append(data, routeMetaChOptional, intentData, hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());

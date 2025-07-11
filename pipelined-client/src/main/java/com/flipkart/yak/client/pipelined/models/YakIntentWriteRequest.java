@@ -7,8 +7,8 @@ import java.util.Optional;
 public class YakIntentWriteRequest<T, U extends CircuitBreakerSettings> extends IntentWriteRequest {
   private StoreData storeData;
 
-  public YakIntentWriteRequest(StoreData storeData, Optional<T> routeKeyOptional, Optional<U> circuitBreakerOptional) {
-    super(routeKeyOptional, circuitBreakerOptional);
+  public YakIntentWriteRequest(StoreData storeData, Optional<T> routeMetaOptional, Optional<U> circuitBreakerOptional) {
+    super(routeMetaOptional, circuitBreakerOptional);
     this.storeData = storeData;
   }
 

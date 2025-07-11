@@ -5,7 +5,6 @@ import com.flipkart.yak.client.exceptions.StoreException;
 import com.flipkart.yak.client.pipelined.exceptions.NoSiteAvailableToHandleException;
 import com.flipkart.yak.client.pipelined.exceptions.PipelinedStoreException;
 import com.flipkart.yak.client.pipelined.models.*;
-import com.flipkart.yak.client.pipelined.models.DataCenter;
 import com.flipkart.yak.client.pipelined.route.StoreRoute;
 import com.flipkart.yak.models.GetColumnMap;
 import com.flipkart.yak.models.GetDataBuilder;
@@ -58,7 +57,7 @@ public class PipelinedClientGetTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<ResultMap>>> future = new CompletableFuture<>();
     when(region1SiteAClient.get(eq(row))).thenReturn(CompletableFuture.completedFuture(resultMap));
 
-    store.get(row, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.get(row, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -75,7 +74,7 @@ public class PipelinedClientGetTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<ResultMap>>> future = new CompletableFuture<>();
     GetColumnMap row = new GetDataBuilder(FULL_TABLE_NAME).withRowKey(rowKey1.getBytes()).buildForColFamily(cf1);
     when(region1SiteAClient.get(eq(row))).thenReturn(CompletableFuture.completedFuture(resultMap));
-    store.get(row, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.get(row, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -92,7 +91,7 @@ public class PipelinedClientGetTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.get(eq(row))).thenReturn(CompletableFuture.completedFuture(resultMap));
 
     PipelinedResponse<StoreOperationResponse<ResultMap>> response =
-        syncStore.get(row, routeKeyChOptional, Optional.empty(), hystrixSettings);
+        syncStore.get(row, routeMetaChOptional, Optional.empty(), hystrixSettings);
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
     }
@@ -107,7 +106,7 @@ public class PipelinedClientGetTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<ResultMap>>> future = new CompletableFuture<>();
     when(region2SiteAClient.get(eq(row))).thenReturn(CompletableFuture.completedFuture(resultMap));
 
-    store.get(row, routeKeyHydOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.get(row, routeMetaHydOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -127,7 +126,7 @@ public class PipelinedClientGetTest extends PipelinedClientBaseTest {
     respFuture.completeExceptionally(new PipelinedStoreException(errorMessage));
     when(region1SiteAClient.get(eq(row))).thenReturn(respFuture);
 
-    store.get(row, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.get(row, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     assertTrue("Should have null response", (response.getOperationResponse().getValue() == null));
     assertTrue("Should not throw exception", (response.getOperationResponse().getError() != null));
@@ -146,7 +145,7 @@ public class PipelinedClientGetTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.get(eq(row))).thenReturn(respFuture);
 
     PipelinedResponse<StoreOperationResponse<ResultMap>> response =
-        syncStore.get(row, routeKeyChOptional, Optional.empty(), hystrixSettings);
+        syncStore.get(row, routeMetaChOptional, Optional.empty(), hystrixSettings);
     assertTrue("Should have null response", (response.getOperationResponse().getValue() == null));
     assertTrue("Should not throw exception", (response.getOperationResponse().getError() != null));
     assertTrue("Should throw exception",
@@ -184,7 +183,7 @@ public class PipelinedClientGetTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<ResultMap>>> future = new CompletableFuture<>();
     when(region1SiteBClient.get(eq(row))).thenReturn(CompletableFuture.completedFuture(resultMap));
 
-    store.get(row, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.get(row, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -209,7 +208,7 @@ public class PipelinedClientGetTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.get(eq(row))).thenReturn(respFuture);
     when(region1SiteBClient.get(eq(row))).thenReturn(CompletableFuture.completedFuture(resultMap));
 
-    store.get(row, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.get(row, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -235,7 +234,7 @@ public class PipelinedClientGetTest extends PipelinedClientBaseTest {
     when(region1SiteBClient.get(eq(row))).thenReturn(respFuture);
     when(region2SiteAClient.get(eq(row))).thenReturn(CompletableFuture.completedFuture(resultMap));
 
-    store.get(row, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.get(row, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -262,7 +261,7 @@ public class PipelinedClientGetTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.get(eq(row))).thenReturn(respFuture);
     when(region1SiteBClient.get(eq(row))).thenReturn(CompletableFuture.completedFuture(resultMap));
 
-    store.get(row, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.get(row, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -286,7 +285,7 @@ public class PipelinedClientGetTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<ResultMap>>> future = new CompletableFuture<>();
     when(region2SiteAClient.get(eq(row))).thenReturn(CompletableFuture.completedFuture(resultMap));
 
-    store.get(row, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.get(row, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
