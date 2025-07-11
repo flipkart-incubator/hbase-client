@@ -1,9 +1,9 @@
 package com.flipkart.yak.client.pipelined.models;
 
 public enum Region implements DataCenter {
-    REGION_1("region-1", "region-1"),
-    REGION_2("region-2", "region-2"),
-    REGION_3("region-3", "region-3");
+    REGION_1("REGION_1", "REGION_1"),
+    REGION_2("REGION_2", "REGION_2"),
+    REGION_3("REGION_3", "REGION_3");
 
     private final String name;
     private final String description;
