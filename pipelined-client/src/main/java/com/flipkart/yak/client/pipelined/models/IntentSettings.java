@@ -3,11 +3,11 @@ package com.flipkart.yak.client.pipelined.models;
 import java.util.Optional;
 
 public class IntentSettings<T, U extends CircuitBreakerSettings> {
-  protected Optional<T> routeKeyOptional;
+  protected Optional<T> routeMetaOptional;
   protected Optional<U> circuitBreakerOptional;
 
-  public IntentSettings(Optional<T> routeKeyOptional, Optional<U> circuitBreakerOptional) {
-    this.routeKeyOptional = routeKeyOptional;
+  public IntentSettings(Optional<T> routeMetaOptional, Optional<U> circuitBreakerOptional) {
+    this.routeMetaOptional = routeMetaOptional;
     this.circuitBreakerOptional = circuitBreakerOptional;
   }
 
@@ -15,7 +15,7 @@ public class IntentSettings<T, U extends CircuitBreakerSettings> {
     return circuitBreakerOptional;
   }
 
-  public Optional<T> getRouteKeyOptional() {
-    return routeKeyOptional;
+  public Optional<T> getRouteMetaOptional() {
+    return routeMetaOptional;
   }
 }

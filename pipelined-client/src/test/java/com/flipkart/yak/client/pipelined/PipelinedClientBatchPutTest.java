@@ -5,7 +5,6 @@ import com.flipkart.yak.client.exceptions.StoreException;
 import com.flipkart.yak.client.pipelined.exceptions.NoSiteAvailableToHandleException;
 import com.flipkart.yak.client.pipelined.exceptions.PipelinedStoreException;
 import com.flipkart.yak.client.pipelined.models.*;
-import com.flipkart.yak.client.pipelined.models.DataCenter;
 import com.flipkart.yak.client.pipelined.route.StoreRoute;
 import com.flipkart.yak.models.StoreData;
 import com.flipkart.yak.models.StoreDataBuilder;
@@ -62,7 +61,7 @@ public class PipelinedClientBatchPutTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<List<StoreOperationResponse<Void>>>> future = new CompletableFuture<>();
     CompletableFuture<Void> respFuture = CompletableFuture.completedFuture(null);
     when(region1SiteAClient.put(eq(dataList))).thenReturn(Arrays.asList(respFuture, respFuture));
-    store.put(dataList, routeKeyChOptional, intentData, hystrixSettings, responsesHandler(future));
+    store.put(dataList, routeMetaChOptional, intentData, hystrixSettings, responsesHandler(future));
 
     PipelinedResponse<List<StoreOperationResponse<Void>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {
@@ -81,7 +80,7 @@ public class PipelinedClientBatchPutTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.put(eq(dataList))).thenReturn(Arrays.asList(respFuture, respFuture));
 
     PipelinedResponse<List<StoreOperationResponse<Void>>> response =
-        syncStore.put(dataList, routeKeyChOptional, intentData, hystrixSettings);
+        syncStore.put(dataList, routeMetaChOptional, intentData, hystrixSettings);
     response.getOperationResponse().stream().forEachOrdered(resp -> {
       assertTrue("Should have null response", (resp.getValue() == null));
       assertTrue("Should not throw exception", (resp.getError() == null));
@@ -96,7 +95,7 @@ public class PipelinedClientBatchPutTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<List<StoreOperationResponse<Void>>>> future = new CompletableFuture<>();
     CompletableFuture<Void> respFuture = CompletableFuture.completedFuture(null);
     when(region1SiteAClient.put(eq(dataList))).thenReturn(Arrays.asList(respFuture, respFuture));
-    store.put(dataList, routeKeyChOptional, Optional.empty(), hystrixSettings, responsesHandler(future));
+    store.put(dataList, routeMetaChOptional, Optional.empty(), hystrixSettings, responsesHandler(future));
 
     PipelinedResponse<List<StoreOperationResponse<Void>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {
@@ -117,7 +116,7 @@ public class PipelinedClientBatchPutTest extends PipelinedClientBaseTest {
     CompletableFuture<Void> respFuture = CompletableFuture.completedFuture(null);
     when(region1SiteAClient.put(eq(dataList))).thenReturn(Arrays.asList(respFuture, respFuture));
     when(region2SiteAClient.put(eq(intentStoreData))).thenReturn(respFailureFuture);
-    store.put(dataList, routeKeyChOptional, intentData, hystrixSettings, responsesHandler(future));
+    store.put(dataList, routeMetaChOptional, intentData, hystrixSettings, responsesHandler(future));
 
     try {
       future.get();
@@ -136,7 +135,7 @@ public class PipelinedClientBatchPutTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<List<StoreOperationResponse<Void>>>> future = new CompletableFuture<>();
     CompletableFuture<Void> respFuture = CompletableFuture.completedFuture(null);
     when(region2SiteAClient.put(eq(dataList))).thenReturn(Arrays.asList(respFuture, respFuture));
-    store.put(dataList, routeKeyHydOptional, intentData, hystrixSettings, responsesHandler(future));
+    store.put(dataList, routeMetaHydOptional, intentData, hystrixSettings, responsesHandler(future));
 
     PipelinedResponse<List<StoreOperationResponse<Void>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {
@@ -156,7 +155,7 @@ public class PipelinedClientBatchPutTest extends PipelinedClientBaseTest {
     CompletableFuture respFailureFuture = new CompletableFuture();
     respFailureFuture.completeExceptionally(new PipelinedStoreException(errorMessage));
     when(region1SiteAClient.put(eq(dataList))).thenReturn(Arrays.asList(respFailureFuture, respFailureFuture));
-    store.put(dataList, routeKeyChOptional, intentData, hystrixSettings, responsesHandler(future));
+    store.put(dataList, routeMetaChOptional, intentData, hystrixSettings, responsesHandler(future));
 
     PipelinedResponse<List<StoreOperationResponse<Void>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {
@@ -177,7 +176,7 @@ public class PipelinedClientBatchPutTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.put(eq(dataList))).thenReturn(Arrays.asList(respFailureFuture, respFailureFuture));
 
     PipelinedResponse<List<StoreOperationResponse<Void>>> response =
-        syncStore.put(dataList, routeKeyChOptional, intentData, hystrixSettings);
+        syncStore.put(dataList, routeMetaChOptional, intentData, hystrixSettings);
     response.getOperationResponse().stream().forEachOrdered(resp -> {
       assertTrue("Should have null response", (resp.getValue() == null));
       assertTrue("Should throw exception", (resp.getError() != null));
@@ -219,7 +218,7 @@ public class PipelinedClientBatchPutTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<List<StoreOperationResponse<Void>>>> future = new CompletableFuture<>();
     CompletableFuture<Void> respFuture = CompletableFuture.completedFuture(null);
     when(region1SiteBClient.put(eq(dataList))).thenReturn(Arrays.asList(respFuture, respFuture));
-    store.put(dataList, routeKeyChOptional, intentData, hystrixSettings, responsesHandler(future));
+    store.put(dataList, routeMetaChOptional, intentData, hystrixSettings, responsesHandler(future));
 
     PipelinedResponse<List<StoreOperationResponse<Void>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {
@@ -245,7 +244,7 @@ public class PipelinedClientBatchPutTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.put(eq(dataList))).thenReturn(Arrays.asList(respFailureFuture, respFailureFuture));
     CompletableFuture<Void> respFuture = CompletableFuture.completedFuture(null);
     when(region1SiteBClient.put(eq(dataList))).thenReturn(Arrays.asList(respFuture, respFuture));
-    store.put(dataList, routeKeyChOptional, intentData, hystrixSettings, responsesHandler(future));
+    store.put(dataList, routeMetaChOptional, intentData, hystrixSettings, responsesHandler(future));
 
     PipelinedResponse<List<StoreOperationResponse<Void>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {
@@ -272,7 +271,7 @@ public class PipelinedClientBatchPutTest extends PipelinedClientBaseTest {
     when(region1SiteBClient.put(eq(dataList))).thenReturn(Arrays.asList(respFailureFuture, respFailureFuture));
     CompletableFuture<Void> respFuture = CompletableFuture.completedFuture(null);
     when(region2SiteAClient.put(eq(dataList))).thenReturn(Arrays.asList(respFuture, respFuture));
-    store.put(dataList, routeKeyChOptional, intentData, hystrixSettings, responsesHandler(future));
+    store.put(dataList, routeMetaChOptional, intentData, hystrixSettings, responsesHandler(future));
 
     PipelinedResponse<List<StoreOperationResponse<Void>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {

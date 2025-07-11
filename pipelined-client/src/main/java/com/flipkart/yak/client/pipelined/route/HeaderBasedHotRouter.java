@@ -16,10 +16,10 @@ public class HeaderBasedHotRouter implements HotRouter<MasterSlaveReplicaSet, Ma
     public HeaderBasedHotRouter() {}
 
     @Override
-    public MasterSlaveReplicaSet getReplicaSet(Optional<Map<DataCenter, MasterSlaveReplicaSet>> replicaSetMapOptional) {
+    public MasterSlaveReplicaSet getReplicaSet(Optional<Map<DataCenter, MasterSlaveReplicaSet>> routeMeta) {
 
-        if (replicaSetMapOptional.isPresent()) {
-            Map<DataCenter, MasterSlaveReplicaSet> replicasetMap = replicaSetMapOptional.get();
+        if (routeMeta.isPresent()) {
+            Map<DataCenter, MasterSlaveReplicaSet> replicasetMap = routeMeta.get();
             Baggage baggage = Baggage.current();
             String dataCenterString = baggage.getEntryValue(Constants.X_PINNED_DC);
 

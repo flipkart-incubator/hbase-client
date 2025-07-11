@@ -6,5 +6,5 @@ import java.util.Optional;
 
 public interface HotRouter<T extends ReplicaSet, U> {
 
-  T getReplicaSet(Optional<U> routeKey) throws PipelinedStoreDataCorruptException;
+  T getReplicaSet(Optional<U> routeMeta) throws PipelinedStoreDataCorruptException;
 }

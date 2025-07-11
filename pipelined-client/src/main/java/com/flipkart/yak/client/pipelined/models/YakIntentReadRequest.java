@@ -7,8 +7,8 @@ import java.util.Optional;
 public class YakIntentReadRequest<T, U extends CircuitBreakerSettings> extends IntentReadRequest {
   private GetRow row;
 
-  public YakIntentReadRequest(GetRow row, Optional<T> routeKeyOptional, Optional<U> circuitBreakerOptional) {
-    super(routeKeyOptional, circuitBreakerOptional);
+  public YakIntentReadRequest(GetRow row, Optional<T> routeMetaOptional, Optional<U> circuitBreakerOptional) {
+    super(routeMetaOptional, circuitBreakerOptional);
     this.row = row;
   }
 

@@ -32,7 +32,7 @@ public interface SyncYakPipelinedStore<T, U extends IntentWriteRequest, V extend
    * Used to perform Increment operations on a single row atomically
    * If the column value does not yet exist it is initialized to amount and written to the specified column.
    *
-   * @param routeKey               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
+   * @param routeMeta               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
    *                               {@link HotRouter} for this operation
    * @param intentData             An {@link Optional} {@link IntentWriteRequest} which is written by specific
    *                               implementation {@link IntentStoreClient}
@@ -43,12 +43,12 @@ public interface SyncYakPipelinedStore<T, U extends IntentWriteRequest, V extend
    * @return {@link PipelinedResponse} with error response if fails, else {@link ResultMap} response
    */
   PipelinedResponse<StoreOperationResponse<ResultMap>> increment(IncrementData incrementData,
-      Optional<T> routeKey, Optional<U> intentData, Optional<V> circuitBreakerSettings)
+      Optional<T> routeMeta, Optional<U> intentData, Optional<V> circuitBreakerSettings)
       throws ExecutionException, InterruptedException, TimeoutException;
 
   /**
    * @param data                   {@link StoreData} to put the row
-   * @param routeKey               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
+   * @param routeMeta               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
    *                               {@link HotRouter} for this operation
    * @param intentData             An {@link Optional} {@link IntentWriteRequest} which is written by specific
    *                               implementation {@link IntentStoreClient}
@@ -61,13 +61,13 @@ public interface SyncYakPipelinedStore<T, U extends IntentWriteRequest, V extend
    * @throws InterruptedException if upstream {@link java.util.concurrent.CompletableFuture} was interrupted
    */
 
-  PipelinedResponse<StoreOperationResponse<Void>> put(StoreData data, Optional<T> routeKey,
+  PipelinedResponse<StoreOperationResponse<Void>> put(StoreData data, Optional<T> routeMeta,
       Optional<U> intentData, Optional<V> circuitBreakerSettings)
       throws ExecutionException, InterruptedException, TimeoutException;
 
   /**
    * @param data                   {@link List} of {@link StoreData} to put the rows in batches
-   * @param routeKey               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
+   * @param routeMeta               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
    *                               {@link HotRouter} for this operation
    * @param intentData             An {@link Optional} {@link IntentWriteRequest} which is written by specific
    *                               implementation {@link IntentStoreClient}
@@ -79,14 +79,14 @@ public interface SyncYakPipelinedStore<T, U extends IntentWriteRequest, V extend
    * @throws ExecutionException   if upstream {@link java.util.concurrent.CompletableFuture} throws with failure
    * @throws InterruptedException if upstream {@link java.util.concurrent.CompletableFuture} was interrupted
    */
-  PipelinedResponse<List<StoreOperationResponse<Void>>> put(List<StoreData> data, Optional<T> routeKey,
+  PipelinedResponse<List<StoreOperationResponse<Void>>> put(List<StoreData> data, Optional<T> routeMeta,
       Optional<U> intentData, Optional<V> circuitBreakerSettings)
       throws ExecutionException, InterruptedException, TimeoutException;
 
   /**
    * @param data                   {@link CheckAndStoreData} checkes row/family/qualifier value matches the expected
    *                               value and updates if matches else responds with false
-   * @param routeKey               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
+   * @param routeMeta               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
    *                               {@link HotRouter} for this operation
    * @param intentData             An {@link Optional} {@link IntentWriteRequest} which is written by specific
    *                               implementation {@link IntentStoreClient}
@@ -99,13 +99,13 @@ public interface SyncYakPipelinedStore<T, U extends IntentWriteRequest, V extend
    * @throws ExecutionException   if upstream {@link java.util.concurrent.CompletableFuture} throws with failure
    * @throws InterruptedException if upstream {@link java.util.concurrent.CompletableFuture} was interrupted
    */
-  PipelinedResponse<StoreOperationResponse<Boolean>> checkAndPut(CheckAndStoreData data, Optional<T> routeKey,
+  PipelinedResponse<StoreOperationResponse<Boolean>> checkAndPut(CheckAndStoreData data, Optional<T> routeMeta,
       Optional<U> intentData, Optional<V> circuitBreakerSettings)
       throws ExecutionException, InterruptedException, TimeoutException;
 
   /**
    * @param data                   {@link StoreData} object for identifying the row to append the family/qualifier to
-   * @param routeKey               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
+   * @param routeMeta               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
    *                               {@link HotRouter} for this operation
    * @param intentData             An {@link Optional} {@link IntentWriteRequest} which is written by specific
    *                               implementation {@link IntentStoreClient}
@@ -118,13 +118,13 @@ public interface SyncYakPipelinedStore<T, U extends IntentWriteRequest, V extend
    * @throws ExecutionException   if upstream {@link java.util.concurrent.CompletableFuture} throws with failure
    * @throws InterruptedException if upstream {@link java.util.concurrent.CompletableFuture} was interrupted
    */
-  PipelinedResponse<StoreOperationResponse<ResultMap>> append(StoreData data, Optional<T> routeKey,
+  PipelinedResponse<StoreOperationResponse<ResultMap>> append(StoreData data, Optional<T> routeMeta,
       Optional<U> intentData, Optional<V> circuitBreakerSettings)
       throws ExecutionException, InterruptedException, TimeoutException;
 
   /**
    * @param data                   {@link List} of {@link DeleteData} to delete the rows in batches
-   * @param routeKey               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
+   * @param routeMeta               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
    *                               {@link HotRouter} for this operation
    * @param intentData             An {@link Optional} {@link IntentWriteRequest} which is written by specific
    *                               implementation {@link IntentStoreClient}
@@ -137,14 +137,14 @@ public interface SyncYakPipelinedStore<T, U extends IntentWriteRequest, V extend
    * @throws ExecutionException   if upstream {@link java.util.concurrent.CompletableFuture} throws with failure
    * @throws InterruptedException if upstream {@link java.util.concurrent.CompletableFuture} was interrupted
    */
-  PipelinedResponse<List<StoreOperationResponse<Void>>> delete(List<DeleteData> data, Optional<T> routeKey,
+  PipelinedResponse<List<StoreOperationResponse<Void>>> delete(List<DeleteData> data, Optional<T> routeMeta,
       Optional<U> intentData, Optional<V> circuitBreakerSettings)
       throws ExecutionException, InterruptedException, TimeoutException;
 
   /**
    * @param data                   {@link CheckAndStoreData} checkes row/family/qualifier value matches the expected
    *                               value and deletes if matches else responds with false
-   * @param routeKey               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
+   * @param routeMeta               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
    *                               {@link HotRouter} for this operation
    * @param intentData             An {@link Optional} {@link IntentWriteRequest} which is written by specific
    *                               implementation {@link IntentStoreClient}
@@ -158,12 +158,12 @@ public interface SyncYakPipelinedStore<T, U extends IntentWriteRequest, V extend
    * @throws InterruptedException if upstream {@link java.util.concurrent.CompletableFuture} was interrupted
    */
   PipelinedResponse<StoreOperationResponse<Boolean>> checkAndDelete(CheckAndDeleteData data,
-      Optional<T> routeKey, Optional<U> intentData, Optional<V> circuitBreakerSettings)
+      Optional<T> routeMeta, Optional<U> intentData, Optional<V> circuitBreakerSettings)
       throws ExecutionException, InterruptedException, TimeoutException;
 
   /**
    * @param data                   {@link ScanData} scan data to scan the table
-   * @param routeKey               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
+   * @param routeMeta               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
    *                               {@link HotRouter} for this operation
    * @param intentData             An {@link Optional} {@link IntentWriteRequest} which is written by specific
    *                               implementation {@link IntentStoreClient}
@@ -175,14 +175,14 @@ public interface SyncYakPipelinedStore<T, U extends IntentWriteRequest, V extend
    * @throws ExecutionException   if upstream {@link java.util.concurrent.CompletableFuture} throws with failure
    * @throws InterruptedException if upstream {@link java.util.concurrent.CompletableFuture} was interrupted
    */
-  PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>> scan(ScanData data, Optional<T> routeKey,
+  PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>> scan(ScanData data, Optional<T> routeMeta,
       Optional<U> intentData, Optional<V> circuitBreakerSettings)
       throws ExecutionException, InterruptedException, TimeoutException;
 
   /**
    * @param <X>                    {@link GetRow} and its subclasses
    * @param row                    {@link GetRow} and its sub classes to fetch the row/family/qualifier
-   * @param routeKey               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
+   * @param routeMeta               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
    *                               {@link HotRouter} for this operation
    * @param intentData             An {@link Optional} {@link IntentWriteRequest} which is written by specific
    *                               implementation {@link IntentStoreClient}
@@ -194,13 +194,13 @@ public interface SyncYakPipelinedStore<T, U extends IntentWriteRequest, V extend
    * @throws ExecutionException   if upstream {@link java.util.concurrent.CompletableFuture} throws with failure
    * @throws InterruptedException if upstream {@link java.util.concurrent.CompletableFuture} was interrupted
    */
-  <X extends GetRow> PipelinedResponse<StoreOperationResponse<ResultMap>> get(X row, Optional<T> routeKey,
+  <X extends GetRow> PipelinedResponse<StoreOperationResponse<ResultMap>> get(X row, Optional<T> routeMeta,
       Optional<U> intentData, Optional<V> circuitBreakerSettings)
       throws ExecutionException, InterruptedException, TimeoutException;
 
   /**
    * @param rows                   {@link List} of {@link GetRow} and its sub classes to fetch the row/family/qualifier
-   * @param routeKey               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
+   * @param routeMeta               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
    *                               {@link HotRouter} for this operation
    * @param intentData             An {@link Optional} {@link IntentWriteRequest} which is written by specific
    *                               implementation {@link IntentStoreClient}
@@ -214,12 +214,12 @@ public interface SyncYakPipelinedStore<T, U extends IntentWriteRequest, V extend
    * @throws InterruptedException if upstream {@link java.util.concurrent.CompletableFuture} was interrupted
    */
   PipelinedResponse<List<StoreOperationResponse<ResultMap>>> get(List<? extends GetRow> rows,
-      Optional<T> routeKey, Optional<U> intentData, Optional<V> circuitBreakerSettings)
+      Optional<T> routeMeta, Optional<U> intentData, Optional<V> circuitBreakerSettings)
       throws ExecutionException, InterruptedException, TimeoutException;
 
   /**
    * @param indexLookup            {@link GetColumnsMapByIndex} for looking up the {@link ColumnsMap} by index key
-   * @param routeKey               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
+   * @param routeMeta               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
    *                               {@link HotRouter} for this operation
    * @param intentData             An {@link Optional} {@link IntentWriteRequest} which is written by specific
    *                               implementation {@link IntentStoreClient}
@@ -232,12 +232,12 @@ public interface SyncYakPipelinedStore<T, U extends IntentWriteRequest, V extend
    * @throws InterruptedException if upstream {@link java.util.concurrent.CompletableFuture} was interrupted
    */
   PipelinedResponse<StoreOperationResponse<List<ColumnsMap>>> getByIndex(GetColumnsMapByIndex indexLookup,
-      Optional<T> routeKey, Optional<U> intentData, Optional<V> circuitBreakerSettings)
+      Optional<T> routeMeta, Optional<U> intentData, Optional<V> circuitBreakerSettings)
       throws ExecutionException, InterruptedException, TimeoutException;
 
   /**
    * @param indexLookup            {@link GetCellByIndex} for looking up the {@link Cell} by index key
-   * @param routeKey               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
+   * @param routeMeta               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
    *                               {@link HotRouter} for this operation
    * @param intentData             An {@link Optional} {@link IntentWriteRequest} which is written by specific
    *                               implementation {@link IntentStoreClient}
@@ -250,7 +250,7 @@ public interface SyncYakPipelinedStore<T, U extends IntentWriteRequest, V extend
    * @throws InterruptedException if upstream {@link java.util.concurrent.CompletableFuture} was interrupted
    */
   PipelinedResponse<StoreOperationResponse<List<Cell>>> getByIndex(GetCellByIndex indexLookup,
-      Optional<T> routeKey, Optional<U> intentData, Optional<V> circuitBreakerSettings)
+      Optional<T> routeMeta, Optional<U> intentData, Optional<V> circuitBreakerSettings)
       throws ExecutionException, InterruptedException, TimeoutException;
 
   /**

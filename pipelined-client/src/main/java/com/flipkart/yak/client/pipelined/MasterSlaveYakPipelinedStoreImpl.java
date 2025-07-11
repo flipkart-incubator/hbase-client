@@ -171,11 +171,11 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
   }
 
   @SuppressWarnings("java:S1193")
-  private List<SiteId> getSites(Optional<T> routeKey, boolean isRead)
+  private List<SiteId> getSites(Optional<T> routeMeta, boolean isRead)
       throws PipelinedStoreDataCorruptException {
     try {
       List<SiteId> sites = new ArrayList<>();
-      MasterSlaveReplicaSet replicaSet = route.getHotRouter().getReplicaSet(routeKey);
+      MasterSlaveReplicaSet replicaSet = route.getHotRouter().getReplicaSet(routeMeta);
 
       if (replicaSet != null && replicaSet.isValid()) {
         if (route instanceof IntentRoute) {
@@ -280,7 +280,7 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
    * {@inheritDoc}
    */
   @Override
-  public void increment(IncrementData incrementData, Optional<T> routeKey, Optional<U> intentData,
+  public void increment(IncrementData incrementData, Optional<T> routeMeta, Optional<U> intentData,
                         Optional<V> circuitBreakerSettings,
                         BiConsumer<PipelinedResponse<StoreOperationResponse<ResultMap>>, Throwable> handler) {
 
@@ -288,7 +288,7 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
     Timer.Context timer = publisher.getTimer(PipelinedClientMetricsPublisher.INCREMENT_TIMER);
     publisher.incrementMetric(PipelinedClientMetricsPublisher.INCREMENT_INIT);
     try {
-      List<SiteId> sites = getSites(routeKey, false);
+      List<SiteId> sites = getSites(routeMeta, false);
       CompletableFuture<StoreOperationResponse<ResultMap>> future = CompletableFuture.completedFuture(null);
       for (SiteId site : sites) {
         future = future.thenComposeAsync(value -> runClientOperation(incrementData, site, value, INCREMENT_METHOD_NAME,
@@ -313,15 +313,15 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
   /**
    * {@inheritDoc}
    */
-  @Override public void put(StoreData data, Optional<T> routeKey, Optional<U> intentData,
-      Optional<V> circuitBreaketrSettings,
-      BiConsumer<PipelinedResponse<StoreOperationResponse<Void>>, Throwable> handler) {
+  @Override public void put(StoreData data, Optional<T> routeMeta, Optional<U> intentData,
+                            Optional<V> circuitBreaketrSettings,
+                            BiConsumer<PipelinedResponse<StoreOperationResponse<Void>>, Throwable> handler) {
 
     publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
     Timer.Context timer = publisher.getTimer(PipelinedClientMetricsPublisher.PUT_TIMER);
     publisher.incrementMetric(PipelinedClientMetricsPublisher.PUT_INIT);
     try {
-      List<SiteId> sites = getSites(routeKey, false);
+      List<SiteId> sites = getSites(routeMeta, false);
       CompletableFuture<StoreOperationResponse<Void>> future = CompletableFuture.completedFuture(null);
       for (SiteId site : sites) {
         future = future.thenComposeAsync(value -> runClientOperation(data, site, value, PUT_METHOD_NAME,
@@ -346,15 +346,15 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
   /**
    * {@inheritDoc}
    */
-  @Override public void put(List<StoreData> dataList, Optional<T> routeKey, Optional<U> intentData,
-      Optional<V> circuitBreaketrSettings,
-      BiConsumer<PipelinedResponse<List<StoreOperationResponse<Void>>>, Throwable> handler) {
+  @Override public void put(List<StoreData> dataList, Optional<T> routeMeta, Optional<U> intentData,
+                            Optional<V> circuitBreaketrSettings,
+                            BiConsumer<PipelinedResponse<List<StoreOperationResponse<Void>>>, Throwable> handler) {
 
     publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
     Timer.Context timer = publisher.getTimer(PipelinedClientMetricsPublisher.BATCH_PUT_TIMER);
     publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_PUT_INIT);
     try {
-      List<SiteId> sites = getSites(routeKey, false);
+      List<SiteId> sites = getSites(routeMeta, false);
       CompletableFuture<List<StoreOperationResponse<Void>>> future = CompletableFuture.completedFuture(null);
       for (SiteId site : sites) {
         future = future.thenComposeAsync(value -> runBatchClientOperation(dataList, site, value, PUT_METHOD_NAME,
@@ -380,15 +380,15 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
   /**
    * {@inheritDoc}
    */
-  @Override public void checkAndPut(CheckAndStoreData data, Optional<T> routeKey, Optional<U> intentData,
-      Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<StoreOperationResponse<Boolean>>, Throwable> handler) {
+  @Override public void checkAndPut(CheckAndStoreData data, Optional<T> routeMeta, Optional<U> intentData,
+                                    Optional<V> circuitBreakerSettings,
+                                    BiConsumer<PipelinedResponse<StoreOperationResponse<Boolean>>, Throwable> handler) {
 
     publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
     Timer.Context timer = publisher.getTimer(PipelinedClientMetricsPublisher.CAS_TIMER);
     publisher.incrementMetric(PipelinedClientMetricsPublisher.CAS_INIT);
     try {
-      List<SiteId> sites = getSites(routeKey, false);
+      List<SiteId> sites = getSites(routeMeta, false);
       CompletableFuture<StoreOperationResponse<Boolean>> future = CompletableFuture.completedFuture(null);
       for (SiteId site : sites) {
         future = future.thenComposeAsync(value -> runClientOperation(data, site, value, CHECK_PUT_METHOD_NAME,
@@ -413,15 +413,15 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
   /**
    * {@inheritDoc}
    */
-  @Override public void append(StoreData data, Optional<T> routeKey, Optional<U> intentData,
-      Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<StoreOperationResponse<ResultMap>>, Throwable> handler) {
+  @Override public void append(StoreData data, Optional<T> routeMeta, Optional<U> intentData,
+                               Optional<V> circuitBreakerSettings,
+                               BiConsumer<PipelinedResponse<StoreOperationResponse<ResultMap>>, Throwable> handler) {
 
     publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
     Timer.Context timer = publisher.getTimer(PipelinedClientMetricsPublisher.APPEND_TIMER);
     publisher.incrementMetric(PipelinedClientMetricsPublisher.APPEND_INIT);
     try {
-      List<SiteId> sites = getSites(routeKey, false);
+      List<SiteId> sites = getSites(routeMeta, false);
       CompletableFuture<StoreOperationResponse<ResultMap>> future = CompletableFuture.completedFuture(null);
       for (SiteId site : sites) {
         future = future.thenComposeAsync(value -> runClientOperation(data, site, value, APPEND_METHOD_NAME,
@@ -446,15 +446,15 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
   /**
    * {@inheritDoc}
    */
-  @Override public void delete(List<DeleteData> data, Optional<T> routeKey, Optional<U> intentData,
-      Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<List<StoreOperationResponse<Void>>>, Throwable> handler) {
+  @Override public void delete(List<DeleteData> data, Optional<T> routeMeta, Optional<U> intentData,
+                               Optional<V> circuitBreakerSettings,
+                               BiConsumer<PipelinedResponse<List<StoreOperationResponse<Void>>>, Throwable> handler) {
 
     publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
     Timer.Context timer = publisher.getTimer(PipelinedClientMetricsPublisher.BATCH_DELETE_TIMER);
     publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_DELETE_INIT);
     try {
-      List<SiteId> sites = getSites(routeKey, false);
+      List<SiteId> sites = getSites(routeMeta, false);
       CompletableFuture<List<StoreOperationResponse<Void>>> future = CompletableFuture.completedFuture(null);
       for (SiteId site : sites) {
         future = future.thenComposeAsync(value -> runBatchClientOperation(data, site, value, DELETE_METHOD_NAME,
@@ -480,15 +480,15 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
   /**
    * {@inheritDoc}
    */
-  @Override public void checkAndDelete(CheckAndDeleteData data, Optional<T> routeKey, Optional<U> intentData,
-      Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<StoreOperationResponse<Boolean>>, Throwable> handler) {
+  @Override public void checkAndDelete(CheckAndDeleteData data, Optional<T> routeMeta, Optional<U> intentData,
+                                       Optional<V> circuitBreakerSettings,
+                                       BiConsumer<PipelinedResponse<StoreOperationResponse<Boolean>>, Throwable> handler) {
 
     publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
     Timer.Context timer = publisher.getTimer(PipelinedClientMetricsPublisher.CHECK_DELETE_TIMER);
     publisher.incrementMetric(PipelinedClientMetricsPublisher.CHECK_DELETE_INIT);
     try {
-      List<SiteId> sites = getSites(routeKey, false);
+      List<SiteId> sites = getSites(routeMeta, false);
       CompletableFuture<StoreOperationResponse<Boolean>> future = CompletableFuture.completedFuture(null);
       for (SiteId site : sites) {
         future = future.thenComposeAsync(value -> runClientOperation(data, site, value, CHECK_DELETE_METHOD_NAME,
@@ -512,13 +512,13 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
   /**
    * {@inheritDoc}
    */
-  public void scan(ScanData data, Optional<T> routeKey, Optional<U> intentData, Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>>, Throwable> handler) {
+  public void scan(ScanData data, Optional<T> routeMeta, Optional<U> intentData, Optional<V> circuitBreakerSettings,
+                   BiConsumer<PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>>, Throwable> handler) {
     publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
     Timer.Context timer = publisher.getTimer(PipelinedClientMetricsPublisher.SCAN_TIMER);
     publisher.incrementMetric(PipelinedClientMetricsPublisher.SCAN_INIT);
     try {
-      List<SiteId> sites = getSites(routeKey, true);
+      List<SiteId> sites = getSites(routeMeta, true);
       CompletableFuture<StoreOperationResponse<Map<String, ResultMap>>> future = CompletableFuture.completedFuture(null);
       for (SiteId site : sites) {
         future = future.thenComposeAsync(value -> runClientOperation(data, site, value, SCAN_METHOD_NAME,
@@ -542,15 +542,15 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
   /**
    * {@inheritDoc}
    */
-  @Override public <X extends GetRow> void get(X gets, Optional<T> routeKey, Optional<U> intentData,
-      Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<StoreOperationResponse<ResultMap>>, Throwable> handler) {
+  @Override public <X extends GetRow> void get(X gets, Optional<T> routeMeta, Optional<U> intentData,
+                                               Optional<V> circuitBreakerSettings,
+                                               BiConsumer<PipelinedResponse<StoreOperationResponse<ResultMap>>, Throwable> handler) {
 
     publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
     Timer.Context timer = publisher.getTimer(PipelinedClientMetricsPublisher.GET_TIMER);
     publisher.incrementMetric(PipelinedClientMetricsPublisher.GET_INIT);
     try {
-      List<SiteId> sites = getSites(routeKey, true);
+      List<SiteId> sites = getSites(routeMeta, true);
       CompletableFuture<StoreOperationResponse<ResultMap>> future = CompletableFuture.completedFuture(null);
       for (SiteId site : sites) {
         future = future.thenComposeAsync(value -> runClientOperation(gets, site, value, GET_METHOD_NAME,
@@ -575,15 +575,15 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
   /**
    * {@inheritDoc}
    */
-  @Override public void get(List<? extends GetRow> rows, Optional<T> routeKey, Optional<U> intentData,
-      Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<List<StoreOperationResponse<ResultMap>>>, Throwable> handler) {
+  @Override public void get(List<? extends GetRow> rows, Optional<T> routeMeta, Optional<U> intentData,
+                            Optional<V> circuitBreakerSettings,
+                            BiConsumer<PipelinedResponse<List<StoreOperationResponse<ResultMap>>>, Throwable> handler) {
 
     publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
     Timer.Context timer = publisher.getTimer(PipelinedClientMetricsPublisher.GET_TIMER);
     publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_GET_INIT);
     try {
-      List<SiteId> sites = getSites(routeKey, true);
+      List<SiteId> sites = getSites(routeMeta, true);
       CompletableFuture<List<StoreOperationResponse<ResultMap>>> future = CompletableFuture.completedFuture(null);
       for (SiteId site : sites) {
         future = future.thenComposeAsync(value -> runBatchClientOperation(rows, site, value, GET_METHOD_NAME,
@@ -609,15 +609,15 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
   /**
    * {@inheritDoc}
    */
-  @Override public void getByIndex(GetColumnsMapByIndex get, Optional<T> routeKey, Optional<U> intentData,
-      Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<StoreOperationResponse<List<ColumnsMap>>>, Throwable> handler) {
+  @Override public void getByIndex(GetColumnsMapByIndex get, Optional<T> routeMeta, Optional<U> intentData,
+                                   Optional<V> circuitBreakerSettings,
+                                   BiConsumer<PipelinedResponse<StoreOperationResponse<List<ColumnsMap>>>, Throwable> handler) {
 
     publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
     Timer.Context timer = publisher.getTimer(PipelinedClientMetricsPublisher.INDEX_GET_TIMER);
     publisher.incrementMetric(PipelinedClientMetricsPublisher.INDEX_GET_INIT);
     try {
-      List<SiteId> sites = getSites(routeKey, true);
+      List<SiteId> sites = getSites(routeMeta, true);
       CompletableFuture<StoreOperationResponse<List<ColumnsMap>>> future = CompletableFuture.completedFuture(null);
       for (SiteId site : sites) {
         future = future.thenComposeAsync(value -> runClientOperation(get, site, value, GET_INDEX_METHOD_NAME,
@@ -641,15 +641,15 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
   /**
    * {@inheritDoc}
    */
-  @Override public void getByIndex(GetCellByIndex get, Optional<T> routeKey, Optional<U> intentData,
-      Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<StoreOperationResponse<List<Cell>>>, Throwable> handler) {
+  @Override public void getByIndex(GetCellByIndex get, Optional<T> routeMeta, Optional<U> intentData,
+                                   Optional<V> circuitBreakerSettings,
+                                   BiConsumer<PipelinedResponse<StoreOperationResponse<List<Cell>>>, Throwable> handler) {
 
     publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
     Timer.Context timer = publisher.getTimer(PipelinedClientMetricsPublisher.INDEX_GET_TIMER);
     publisher.incrementMetric(PipelinedClientMetricsPublisher.INDEX_GET_INIT);
     try {
-      List<SiteId> sites = getSites(routeKey, true);
+      List<SiteId> sites = getSites(routeMeta, true);
       CompletableFuture<StoreOperationResponse<List<Cell>>> future = CompletableFuture.completedFuture(null);
       for (SiteId site : sites) {
         future = future.thenComposeAsync(value -> runClientOperation(get, site, value, GET_INDEX_METHOD_NAME,
@@ -671,9 +671,9 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
     }
   }
 
-  @Override public List<AsyncStoreClient> getAsyncStoreClient(Optional<T> routeKey)
+  @Override public List<AsyncStoreClient> getAsyncStoreClient(Optional<T> routeMeta)
       throws PipelinedStoreDataCorruptException {
-    List<SiteId> sites = getSites(routeKey, true);
+    List<SiteId> sites = getSites(routeMeta, true);
 
     List<AsyncStoreClient> connections = new ArrayList<>();
     for (SiteId siteId : sites) {

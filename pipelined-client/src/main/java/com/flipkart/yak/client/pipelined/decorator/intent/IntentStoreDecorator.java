@@ -27,45 +27,45 @@ public abstract class IntentStoreDecorator<T, U extends IntentWriteRequest, V ex
     this.intentStoreClient = intentStoreClient;
   }
 
-  @Override public void increment(IncrementData incrementData, Optional<T> routeKey, Optional<U> intentData,
+  @Override public void increment(IncrementData incrementData, Optional<T> routeMeta, Optional<U> intentData,
                                   Optional<V> circuitBreakerSettings,
                                   BiConsumer<PipelinedResponse<StoreOperationResponse<ResultMap>>, Throwable> handler) {
-    pipelinedStore.increment(incrementData, routeKey, intentData, circuitBreakerSettings, handler);
+    pipelinedStore.increment(incrementData, routeMeta, intentData, circuitBreakerSettings, handler);
   }
 
   @Override
-  public void scan(ScanData data, Optional<T> routeKey, Optional<U> intentData, Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>>, Throwable> handler) {
-    pipelinedStore.scan(data, routeKey, intentData, circuitBreakerSettings, handler);
+  public void scan(ScanData data, Optional<T> routeMeta, Optional<U> intentData, Optional<V> circuitBreakerSettings,
+                   BiConsumer<PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>>, Throwable> handler) {
+    pipelinedStore.scan(data, routeMeta, intentData, circuitBreakerSettings, handler);
   }
 
-  @Override public <X extends GetRow> void get(X row, Optional<T> routeKey, Optional<U> intentData,
-      Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<StoreOperationResponse<ResultMap>>, Throwable> handler) {
-    pipelinedStore.get(row, routeKey, intentData, circuitBreakerSettings, handler);
+  @Override public <X extends GetRow> void get(X row, Optional<T> routeMeta, Optional<U> intentData,
+                                               Optional<V> circuitBreakerSettings,
+                                               BiConsumer<PipelinedResponse<StoreOperationResponse<ResultMap>>, Throwable> handler) {
+    pipelinedStore.get(row, routeMeta, intentData, circuitBreakerSettings, handler);
   }
 
-  @Override public void get(List<? extends GetRow> rows, Optional<T> routeKey, Optional<U> intentData,
-      Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<List<StoreOperationResponse<ResultMap>>>, Throwable> handler) {
-    pipelinedStore.get(rows, routeKey, intentData, circuitBreakerSettings, handler);
+  @Override public void get(List<? extends GetRow> rows, Optional<T> routeMeta, Optional<U> intentData,
+                            Optional<V> circuitBreakerSettings,
+                            BiConsumer<PipelinedResponse<List<StoreOperationResponse<ResultMap>>>, Throwable> handler) {
+    pipelinedStore.get(rows, routeMeta, intentData, circuitBreakerSettings, handler);
   }
 
-  @Override public void getByIndex(GetColumnsMapByIndex indexLookup, Optional<T> routeKey, Optional<U> intentData,
-      Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<StoreOperationResponse<List<ColumnsMap>>>, Throwable> handler) {
-    pipelinedStore.getByIndex(indexLookup, routeKey, intentData, circuitBreakerSettings, handler);
+  @Override public void getByIndex(GetColumnsMapByIndex indexLookup, Optional<T> routeMeta, Optional<U> intentData,
+                                   Optional<V> circuitBreakerSettings,
+                                   BiConsumer<PipelinedResponse<StoreOperationResponse<List<ColumnsMap>>>, Throwable> handler) {
+    pipelinedStore.getByIndex(indexLookup, routeMeta, intentData, circuitBreakerSettings, handler);
   }
 
-  @Override public void getByIndex(GetCellByIndex indexLookup, Optional<T> routeKey, Optional<U> intentData,
-      Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<StoreOperationResponse<List<Cell>>>, Throwable> handler) {
-    pipelinedStore.getByIndex(indexLookup, routeKey, intentData, circuitBreakerSettings, handler);
+  @Override public void getByIndex(GetCellByIndex indexLookup, Optional<T> routeMeta, Optional<U> intentData,
+                                   Optional<V> circuitBreakerSettings,
+                                   BiConsumer<PipelinedResponse<StoreOperationResponse<List<Cell>>>, Throwable> handler) {
+    pipelinedStore.getByIndex(indexLookup, routeMeta, intentData, circuitBreakerSettings, handler);
   }
 
-  @Override public List<AsyncStoreClient> getAsyncStoreClient(Optional<T> routeKey)
+  @Override public List<AsyncStoreClient> getAsyncStoreClient(Optional<T> routeMeta)
       throws PipelinedStoreDataCorruptException {
-    return pipelinedStore.getAsyncStoreClient(routeKey);
+    return pipelinedStore.getAsyncStoreClient(routeMeta);
   }
 
   @Override public AsyncStoreClient getAsyncStoreClient(SiteId siteId) {

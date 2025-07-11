@@ -5,7 +5,6 @@ import com.flipkart.yak.client.exceptions.StoreException;
 import com.flipkart.yak.client.pipelined.exceptions.NoSiteAvailableToHandleException;
 import com.flipkart.yak.client.pipelined.exceptions.PipelinedStoreException;
 import com.flipkart.yak.client.pipelined.models.*;
-import com.flipkart.yak.client.pipelined.models.DataCenter;
 import com.flipkart.yak.client.pipelined.route.StoreRoute;
 import com.flipkart.yak.models.ResultMap;
 import com.flipkart.yak.models.ScanData;
@@ -61,7 +60,7 @@ public class PipelinedClientScanTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>>> future = new CompletableFuture<>();
     when(region1SiteAClient.scan(scanData)).thenReturn(CompletableFuture.completedFuture(resultMaps));
 
-    store.scan(scanData, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.scan(scanData, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -80,7 +79,7 @@ public class PipelinedClientScanTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.scan(scanData)).thenReturn(CompletableFuture.completedFuture(resultMaps));
 
     PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>> response =
-        syncStore.scan(scanData, routeKeyChOptional, Optional.empty(), hystrixSettings);
+        syncStore.scan(scanData, routeMetaChOptional, Optional.empty(), hystrixSettings);
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
     }
@@ -96,7 +95,7 @@ public class PipelinedClientScanTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>>> future = new CompletableFuture<>();
     when(region2SiteAClient.scan(scanData)).thenReturn(CompletableFuture.completedFuture(resultMaps));
 
-    store.scan(scanData, routeKeyHydOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.scan(scanData, routeMetaHydOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -117,7 +116,7 @@ public class PipelinedClientScanTest extends PipelinedClientBaseTest {
     respFuture.completeExceptionally(new PipelinedStoreException(errorMessage));
     when(region1SiteAClient.scan(scanData)).thenReturn(respFuture);
 
-    store.scan(scanData, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.scan(scanData, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>> response = future.get();
 
     assertTrue("Should have null response", (response.getOperationResponse().getValue() == null));
@@ -138,7 +137,7 @@ public class PipelinedClientScanTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.scan(scanData)).thenReturn(respFuture);
 
     PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>> response =
-        syncStore.scan(scanData, routeKeyChOptional, Optional.empty(), hystrixSettings);
+        syncStore.scan(scanData, routeMetaChOptional, Optional.empty(), hystrixSettings);
 
     assertTrue("Should have null response", (response.getOperationResponse().getValue() == null));
     assertTrue("Should throw exception", (response.getOperationResponse().getError() != null));
@@ -178,7 +177,7 @@ public class PipelinedClientScanTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>>> future = new CompletableFuture<>();
     when(region1SiteBClient.scan(scanData)).thenReturn(CompletableFuture.completedFuture(resultMaps));
 
-    store.scan(scanData, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.scan(scanData, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -204,7 +203,7 @@ public class PipelinedClientScanTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.scan(scanData)).thenReturn(respFuture);
     when(region1SiteBClient.scan(scanData)).thenReturn(CompletableFuture.completedFuture(resultMaps));
 
-    store.scan(scanData, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.scan(scanData, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -231,7 +230,7 @@ public class PipelinedClientScanTest extends PipelinedClientBaseTest {
     when(region1SiteBClient.scan(scanData)).thenReturn(respFuture);
     when(region2SiteAClient.scan(scanData)).thenReturn(CompletableFuture.completedFuture(resultMaps));
 
-    store.scan(scanData, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.scan(scanData, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -257,7 +256,7 @@ public class PipelinedClientScanTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.scan(scanData)).thenReturn(respFuture);
     when(region1SiteBClient.scan(scanData)).thenReturn(CompletableFuture.completedFuture(resultMaps));
 
-    store.scan(scanData, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.scan(scanData, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -280,7 +279,7 @@ public class PipelinedClientScanTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>>> future = new CompletableFuture<>();
     when(region2SiteAClient.scan(scanData)).thenReturn(CompletableFuture.completedFuture(resultMaps));
 
-    store.scan(scanData, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.scan(scanData, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<Map<String, ResultMap>>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());

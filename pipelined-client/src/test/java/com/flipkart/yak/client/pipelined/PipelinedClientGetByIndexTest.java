@@ -5,7 +5,6 @@ import com.flipkart.yak.client.exceptions.StoreException;
 import com.flipkart.yak.client.pipelined.exceptions.NoSiteAvailableToHandleException;
 import com.flipkart.yak.client.pipelined.exceptions.PipelinedStoreException;
 import com.flipkart.yak.client.pipelined.models.*;
-import com.flipkart.yak.client.pipelined.models.DataCenter;
 import com.flipkart.yak.client.pipelined.route.StoreRoute;
 import com.flipkart.yak.models.Cell;
 import com.flipkart.yak.models.ColumnsMap;
@@ -74,7 +73,7 @@ public class PipelinedClientGetByIndexTest extends PipelinedClientBaseTest {
       throws ExecutionException, InterruptedException, StoreException, IOException {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<List<ColumnsMap>>>> future = new CompletableFuture<>();
     when(region1SiteAClient.getByIndex(eq(columnsMapByIndex))).thenReturn(CompletableFuture.completedFuture(columns));
-    store.getByIndex(columnsMapByIndex, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.getByIndex(columnsMapByIndex, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<List<ColumnsMap>>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -87,7 +86,7 @@ public class PipelinedClientGetByIndexTest extends PipelinedClientBaseTest {
 
     CompletableFuture<PipelinedResponse<StoreOperationResponse<List<Cell>>>> futureCell = new CompletableFuture<>();
     when(region1SiteAClient.getByIndex(eq(cellByIndex))).thenReturn(CompletableFuture.completedFuture(cells));
-    store.getByIndex(cellByIndex, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(futureCell));
+    store.getByIndex(cellByIndex, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(futureCell));
     PipelinedResponse<StoreOperationResponse<List<Cell>>> responseCell = futureCell.get();
     if (responseCell.getOperationResponse().getError() != null) {
       throw new ExecutionException(responseCell.getOperationResponse().getError());
@@ -103,7 +102,7 @@ public class PipelinedClientGetByIndexTest extends PipelinedClientBaseTest {
       throws ExecutionException, InterruptedException, TimeoutException {
     when(region1SiteAClient.getByIndex(eq(columnsMapByIndex))).thenReturn(CompletableFuture.completedFuture(columns));
     PipelinedResponse<StoreOperationResponse<List<ColumnsMap>>> response =
-        syncStore.getByIndex(columnsMapByIndex, routeKeyChOptional, Optional.empty(), hystrixSettings);
+        syncStore.getByIndex(columnsMapByIndex, routeMetaChOptional, Optional.empty(), hystrixSettings);
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
     }
@@ -115,7 +114,7 @@ public class PipelinedClientGetByIndexTest extends PipelinedClientBaseTest {
 
     when(region1SiteAClient.getByIndex(eq(cellByIndex))).thenReturn(CompletableFuture.completedFuture(cells));
     PipelinedResponse<StoreOperationResponse<List<Cell>>> responseCell =
-        syncStore.getByIndex(cellByIndex, routeKeyChOptional, Optional.empty(), hystrixSettings);
+        syncStore.getByIndex(cellByIndex, routeMetaChOptional, Optional.empty(), hystrixSettings);
     if (responseCell.getOperationResponse().getError() != null) {
       throw new ExecutionException(responseCell.getOperationResponse().getError());
     }
@@ -130,7 +129,7 @@ public class PipelinedClientGetByIndexTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<List<ColumnsMap>>>> future = new CompletableFuture<>();
     when(region2SiteAClient.getByIndex(eq(columnsMapByIndex))).thenReturn(CompletableFuture.completedFuture(columns));
     store
-        .getByIndex(columnsMapByIndex, routeKeyHydOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+        .getByIndex(columnsMapByIndex, routeMetaHydOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<List<ColumnsMap>>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -144,7 +143,7 @@ public class PipelinedClientGetByIndexTest extends PipelinedClientBaseTest {
 
     CompletableFuture<PipelinedResponse<StoreOperationResponse<List<Cell>>>> futureCell = new CompletableFuture<>();
     when(region2SiteAClient.getByIndex(eq(cellByIndex))).thenReturn(CompletableFuture.completedFuture(cells));
-    store.getByIndex(cellByIndex, routeKeyHydOptional, Optional.empty(), hystrixSettings, responseHandler(futureCell));
+    store.getByIndex(cellByIndex, routeMetaHydOptional, Optional.empty(), hystrixSettings, responseHandler(futureCell));
     PipelinedResponse<StoreOperationResponse<List<Cell>>> responseCell = futureCell.get();
     if (responseCell.getOperationResponse().getError() != null) {
       throw new ExecutionException(responseCell.getOperationResponse().getError());
@@ -164,7 +163,7 @@ public class PipelinedClientGetByIndexTest extends PipelinedClientBaseTest {
     CompletableFuture respFuture = new CompletableFuture();
     respFuture.completeExceptionally(new PipelinedStoreException(errorMessage));
     when(region1SiteAClient.getByIndex(eq(columnsMapByIndex))).thenReturn(respFuture);
-    store.getByIndex(columnsMapByIndex, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.getByIndex(columnsMapByIndex, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<List<ColumnsMap>>> response = future.get();
     assertTrue("Should have null response", (response.getOperationResponse().getValue() == null));
     assertTrue("Should not throw exception", (response.getOperationResponse().getError() != null));
@@ -176,7 +175,7 @@ public class PipelinedClientGetByIndexTest extends PipelinedClientBaseTest {
 
     CompletableFuture<PipelinedResponse<StoreOperationResponse<List<Cell>>>> futureCell = new CompletableFuture<>();
     when(region1SiteAClient.getByIndex(eq(cellByIndex))).thenReturn(respFuture);
-    store.getByIndex(cellByIndex, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(futureCell));
+    store.getByIndex(cellByIndex, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(futureCell));
     PipelinedResponse<StoreOperationResponse<List<Cell>>> responseCell = futureCell.get();
     assertTrue("Should have null response", (responseCell.getOperationResponse().getValue() == null));
     assertTrue("Should not throw exception", (responseCell.getOperationResponse().getError() != null));
@@ -194,7 +193,7 @@ public class PipelinedClientGetByIndexTest extends PipelinedClientBaseTest {
     respFuture.completeExceptionally(new PipelinedStoreException(errorMessage));
     when(region1SiteAClient.getByIndex(eq(columnsMapByIndex))).thenReturn(respFuture);
     PipelinedResponse<StoreOperationResponse<List<ColumnsMap>>> response =
-        syncStore.getByIndex(columnsMapByIndex, routeKeyChOptional, Optional.empty(), hystrixSettings);
+        syncStore.getByIndex(columnsMapByIndex, routeMetaChOptional, Optional.empty(), hystrixSettings);
     assertTrue("Should have null response", (response.getOperationResponse().getValue() == null));
     assertTrue("Should not throw exception", (response.getOperationResponse().getError() != null));
     assertTrue("Should throw exception",
@@ -205,7 +204,7 @@ public class PipelinedClientGetByIndexTest extends PipelinedClientBaseTest {
 
     when(region1SiteAClient.getByIndex(eq(cellByIndex))).thenReturn(respFuture);
     PipelinedResponse<StoreOperationResponse<List<Cell>>> responseCell =
-        syncStore.getByIndex(cellByIndex, routeKeyChOptional, Optional.empty(), hystrixSettings);
+        syncStore.getByIndex(cellByIndex, routeMetaChOptional, Optional.empty(), hystrixSettings);
     assertTrue("Should have null response", (responseCell.getOperationResponse().getValue() == null));
     assertTrue("Should not throw exception", (responseCell.getOperationResponse().getError() != null));
     assertTrue("Should throw exception",
@@ -256,7 +255,7 @@ public class PipelinedClientGetByIndexTest extends PipelinedClientBaseTest {
     store = generatePipelinedStore(storeConfig, storeRoute, registry, intentStore);
     CompletableFuture<PipelinedResponse<StoreOperationResponse<List<ColumnsMap>>>> future = new CompletableFuture<>();
     when(region1SiteBClient.getByIndex(eq(columnsMapByIndex))).thenReturn(CompletableFuture.completedFuture(columns));
-    store.getByIndex(columnsMapByIndex, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.getByIndex(columnsMapByIndex, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<List<ColumnsMap>>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -270,7 +269,7 @@ public class PipelinedClientGetByIndexTest extends PipelinedClientBaseTest {
 
     CompletableFuture<PipelinedResponse<StoreOperationResponse<List<Cell>>>> futureCell = new CompletableFuture<>();
     when(region1SiteBClient.getByIndex(eq(cellByIndex))).thenReturn(CompletableFuture.completedFuture(cells));
-    store.getByIndex(cellByIndex, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(futureCell));
+    store.getByIndex(cellByIndex, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(futureCell));
     PipelinedResponse<StoreOperationResponse<List<Cell>>> responseCell = futureCell.get();
     if (responseCell.getOperationResponse().getError() != null) {
       throw new ExecutionException(responseCell.getOperationResponse().getError());
@@ -296,7 +295,7 @@ public class PipelinedClientGetByIndexTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<List<ColumnsMap>>>> future = new CompletableFuture<>();
     when(region1SiteAClient.getByIndex(eq(columnsMapByIndex))).thenReturn(respFuture);
     when(region1SiteBClient.getByIndex(eq(columnsMapByIndex))).thenReturn(CompletableFuture.completedFuture(columns));
-    store.getByIndex(columnsMapByIndex, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.getByIndex(columnsMapByIndex, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<List<ColumnsMap>>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -311,7 +310,7 @@ public class PipelinedClientGetByIndexTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<List<Cell>>>> futureCell = new CompletableFuture<>();
     when(region1SiteAClient.getByIndex(eq(cellByIndex))).thenReturn(respFuture);
     when(region1SiteBClient.getByIndex(eq(cellByIndex))).thenReturn(CompletableFuture.completedFuture(cells));
-    store.getByIndex(cellByIndex, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(futureCell));
+    store.getByIndex(cellByIndex, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(futureCell));
     PipelinedResponse<StoreOperationResponse<List<Cell>>> responseCell = futureCell.get();
     if (responseCell.getOperationResponse().getError() != null) {
       throw new ExecutionException(responseCell.getOperationResponse().getError());
@@ -338,7 +337,7 @@ public class PipelinedClientGetByIndexTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.getByIndex(eq(columnsMapByIndex))).thenReturn(respFuture);
     when(region1SiteBClient.getByIndex(eq(columnsMapByIndex))).thenReturn(respFuture);
     when(region2SiteAClient.getByIndex(eq(columnsMapByIndex))).thenReturn(CompletableFuture.completedFuture(columns));
-    store.getByIndex(columnsMapByIndex, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.getByIndex(columnsMapByIndex, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<List<ColumnsMap>>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -354,7 +353,7 @@ public class PipelinedClientGetByIndexTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.getByIndex(eq(cellByIndex))).thenReturn(respFuture);
     when(region1SiteBClient.getByIndex(eq(cellByIndex))).thenReturn(respFuture);
     when(region2SiteAClient.getByIndex(eq(cellByIndex))).thenReturn(CompletableFuture.completedFuture(cells));
-    store.getByIndex(cellByIndex, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(futureCell));
+    store.getByIndex(cellByIndex, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(futureCell));
     PipelinedResponse<StoreOperationResponse<List<Cell>>> responseCell = futureCell.get();
     if (responseCell.getOperationResponse().getError() != null) {
       throw new ExecutionException(responseCell.getOperationResponse().getError());

@@ -57,7 +57,7 @@ public class YakIntentStoreClientImpl implements
     Timer.Context timer = publisher.getTimer(PipelinedClientMetricsPublisher.PUT_TIMER);
     publisher.incrementMetric(PipelinedClientMetricsPublisher.PUT_INIT);
 
-    pipelinedStore.put(request.getStoreData(), request.getRouteKeyOptional(), Optional.empty(), Optional.empty(),
+    pipelinedStore.put(request.getStoreData(), request.getRouteMetaOptional(), Optional.empty(), Optional.empty(),
             (BiConsumer<PipelinedResponse<StoreOperationResponse<Void>>, Throwable>) (response, error) -> {
           try {
             handler.accept(response, error);
@@ -75,7 +75,7 @@ public class YakIntentStoreClientImpl implements
     Timer.Context timer = publisher.getTimer(PipelinedClientMetricsPublisher.GET_TIMER);
     publisher.incrementMetric(PipelinedClientMetricsPublisher.GET_INIT);
 
-    pipelinedStore.get(request.getRow(), request.getRouteKeyOptional(), Optional.empty(), Optional.empty(),
+    pipelinedStore.get(request.getRow(), request.getRouteMetaOptional(), Optional.empty(), Optional.empty(),
             (BiConsumer<PipelinedResponse<StoreOperationResponse<ResultMap>>, Throwable>) (response, error) -> {
           try {
             handler.accept(response, error);

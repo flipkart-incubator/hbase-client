@@ -91,10 +91,10 @@ public abstract class PipelinedClientBaseTest {
   protected String rowKey2 = "rk2-" + RandomStringUtils.randomAlphanumeric(10).toUpperCase();
   protected String indexKey1 = "ik1-" + RandomStringUtils.randomAlphanumeric(10).toUpperCase();
   protected String indexKey2 = "ik2-" + RandomStringUtils.randomAlphanumeric(10).toUpperCase();
-  protected String routeKeyCh = "CH-" + RandomStringUtils.randomAlphanumeric(10).toUpperCase();
-  protected String routeKeyHyd = "HYD-" + RandomStringUtils.randomAlphanumeric(10).toUpperCase();
-  protected Optional<String> routeKeyChOptional = Optional.of(routeKeyCh);
-  protected Optional<String> routeKeyHydOptional = Optional.of(routeKeyHyd);
+  protected String routeMetaCh = "CH-" + RandomStringUtils.randomAlphanumeric(10).toUpperCase();
+  protected String routeMetaHyd = "HYD-" + RandomStringUtils.randomAlphanumeric(10).toUpperCase();
+  protected Optional<String> routeMetaChOptional = Optional.of(routeMetaCh);
+  protected Optional<String> routeMetaHydOptional = Optional.of(routeMetaHyd);
   protected String cf1 = "cf1-" + RandomStringUtils.randomAlphanumeric(10).toUpperCase();
   protected String cf2 = "cf2-" + RandomStringUtils.randomAlphanumeric(10).toUpperCase();
   protected String cq1 = "cq1-" + RandomStringUtils.randomAlphanumeric(10).toUpperCase();
@@ -158,7 +158,7 @@ public abstract class PipelinedClientBaseTest {
           new StoreDataBuilder(FULL_TABLE_NAME).withRowKey(iRowKey.getBytes()).addColumn(cf1, cq1, qv1.getBytes())
               .build();
       when(region2SiteAClient.put(eq(intentStoreData))).thenReturn(CompletableFuture.completedFuture(null));
-      intentData = Optional.of(new YakIntentWriteRequest<String, HystrixSettings>(intentStoreData, routeKeyHydOptional,
+      intentData = Optional.of(new YakIntentWriteRequest<String, HystrixSettings>(intentStoreData, routeMetaHydOptional,
           Optional.of(new HystrixSettings(storeSettings))));
     }
   }
@@ -222,32 +222,32 @@ public abstract class PipelinedClientBaseTest {
   }
 
   protected HotRouter nullRoute = new HotRouter<MasterSlaveReplicaSet, String>() {
-    @Override public MasterSlaveReplicaSet getReplicaSet(Optional<String> routeKey)
+    @Override public MasterSlaveReplicaSet getReplicaSet(Optional<String> routeMeta)
         throws NoSiteAvailableToHandleException {
       return null;
     }
   };
 
   protected HotRouter nullValuesRoute = new HotRouter<MasterSlaveReplicaSet, String>() {
-    @Override public MasterSlaveReplicaSet getReplicaSet(Optional<String> routeKey)
+    @Override public MasterSlaveReplicaSet getReplicaSet(Optional<String> routeMeta)
         throws NoSiteAvailableToHandleException {
       return new MasterSlaveReplicaSet(null, null);
     }
   };
 
   protected HotRouter localPreferredRouter = new HotRouter<MasterSlaveReplicaSet, String>() {
-    @Override public MasterSlaveReplicaSet getReplicaSet(Optional<String> routeKey)
+    @Override public MasterSlaveReplicaSet getReplicaSet(Optional<String> routeMeta)
         throws NoSiteAvailableToHandleException {
       return new MasterSlaveReplicaSet(Region1SiteA, Arrays.asList(Region2SiteA, Region1SiteB));
     }
   };
 
   protected HotRouter router = new HotRouter<MasterSlaveReplicaSet, String>() {
-    @Override public MasterSlaveReplicaSet getReplicaSet(Optional<String> routeKey)
+    @Override public MasterSlaveReplicaSet getReplicaSet(Optional<String> routeMeta)
         throws NoSiteAvailableToHandleException {
       MasterSlaveReplicaSet replicaSet;
-      if (routeKey.isPresent()) {
-        String key = routeKey.get();
+      if (routeMeta.isPresent()) {
+        String key = routeMeta.get();
         if (key.startsWith("CH")) {
           replicaSet = new MasterSlaveReplicaSet(Region1SiteA, Arrays.asList(Region1SiteB, Region2SiteA));
         } else if (key.startsWith("HYD")) {

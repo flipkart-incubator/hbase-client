@@ -5,7 +5,6 @@ import com.flipkart.yak.client.exceptions.StoreException;
 import com.flipkart.yak.client.pipelined.exceptions.NoSiteAvailableToHandleException;
 import com.flipkart.yak.client.pipelined.exceptions.PipelinedStoreException;
 import com.flipkart.yak.client.pipelined.models.*;
-import com.flipkart.yak.client.pipelined.models.DataCenter;
 import com.flipkart.yak.client.pipelined.route.StoreRoute;
 import com.flipkart.yak.models.Cell;
 import com.flipkart.yak.models.ColumnsMap;
@@ -77,7 +76,7 @@ public class PipelinedClientBatchGetTest extends PipelinedClientBaseTest {
         resultsMap.stream().map(resultMap -> CompletableFuture.completedFuture(resultMap))
             .collect(Collectors.toList()));
 
-    store.get(rows, routeKeyChOptional, Optional.empty(), hystrixSettings, responsesHandler(future));
+    store.get(rows, routeMetaChOptional, Optional.empty(), hystrixSettings, responsesHandler(future));
     PipelinedResponse<List<StoreOperationResponse<ResultMap>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {
       assertTrue("Should have null response", (resultsMap.contains(resp.getValue())));
@@ -95,7 +94,7 @@ public class PipelinedClientBatchGetTest extends PipelinedClientBaseTest {
             .collect(Collectors.toList()));
 
     PipelinedResponse<List<StoreOperationResponse<ResultMap>>> response =
-        syncStore.get(rows, routeKeyChOptional, Optional.empty(), hystrixSettings);
+        syncStore.get(rows, routeMetaChOptional, Optional.empty(), hystrixSettings);
     response.getOperationResponse().stream().forEachOrdered(resp -> {
       assertTrue("Should have null response", (resultsMap.contains(resp.getValue())));
       assertTrue("Should not throw exception", (resp.getError() == null));
@@ -111,7 +110,7 @@ public class PipelinedClientBatchGetTest extends PipelinedClientBaseTest {
         resultsMap.stream().map(resultMap -> CompletableFuture.completedFuture(resultMap))
             .collect(Collectors.toList()));
 
-    store.get(rows, routeKeyHydOptional, Optional.empty(), hystrixSettings, responsesHandler(future));
+    store.get(rows, routeMetaHydOptional, Optional.empty(), hystrixSettings, responsesHandler(future));
     PipelinedResponse<List<StoreOperationResponse<ResultMap>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {
       assertTrue("Should not have response", (resultsMap.contains(resp.getValue())));
@@ -131,7 +130,7 @@ public class PipelinedClientBatchGetTest extends PipelinedClientBaseTest {
 
     when(region1SiteAClient.get(eq(rows)))
         .thenReturn(resultsMap.stream().map(resultMap -> respFuture).collect(Collectors.toList()));
-    store.get(rows, routeKeyChOptional, Optional.empty(), hystrixSettings, responsesHandler(future));
+    store.get(rows, routeMetaChOptional, Optional.empty(), hystrixSettings, responsesHandler(future));
     PipelinedResponse<List<StoreOperationResponse<ResultMap>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {
       assertTrue("Should have null response", (resp.getValue() == null));
@@ -151,7 +150,7 @@ public class PipelinedClientBatchGetTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.get(eq(rows)))
         .thenReturn(resultsMap.stream().map(resultMap -> respFuture).collect(Collectors.toList()));
     PipelinedResponse<List<StoreOperationResponse<ResultMap>>> response =
-        syncStore.get(rows, routeKeyChOptional, Optional.empty(), hystrixSettings);
+        syncStore.get(rows, routeMetaChOptional, Optional.empty(), hystrixSettings);
     response.getOperationResponse().stream().forEachOrdered(resp -> {
       assertTrue("Should have null response", (resp.getValue() == null));
       assertTrue("Should not throw exception", (resp.getError() != null));
@@ -194,7 +193,7 @@ public class PipelinedClientBatchGetTest extends PipelinedClientBaseTest {
         resultsMap.stream().map(resultMap -> CompletableFuture.completedFuture(resultMap))
             .collect(Collectors.toList()));
 
-    store.get(rows, routeKeyChOptional, Optional.empty(), hystrixSettings, responsesHandler(future));
+    store.get(rows, routeMetaChOptional, Optional.empty(), hystrixSettings, responsesHandler(future));
     PipelinedResponse<List<StoreOperationResponse<ResultMap>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {
       assertTrue("Should have null response", (resultsMap.contains(resp.getValue())));
@@ -221,7 +220,7 @@ public class PipelinedClientBatchGetTest extends PipelinedClientBaseTest {
         resultsMap.stream().map(resultMap -> CompletableFuture.completedFuture(resultMap))
             .collect(Collectors.toList()));
 
-    store.get(rows, routeKeyChOptional, Optional.empty(), hystrixSettings, responsesHandler(future));
+    store.get(rows, routeMetaChOptional, Optional.empty(), hystrixSettings, responsesHandler(future));
     PipelinedResponse<List<StoreOperationResponse<ResultMap>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {
       assertTrue("Should have null response", (resultsMap.contains(resp.getValue())));
@@ -249,7 +248,7 @@ public class PipelinedClientBatchGetTest extends PipelinedClientBaseTest {
         resultsMap.stream().map(resultMap -> CompletableFuture.completedFuture(resultMap))
             .collect(Collectors.toList()));
 
-    store.get(rows, routeKeyChOptional, Optional.empty(), hystrixSettings, responsesHandler(future));
+    store.get(rows, routeMetaChOptional, Optional.empty(), hystrixSettings, responsesHandler(future));
     PipelinedResponse<List<StoreOperationResponse<ResultMap>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {
       assertTrue("Should have null response", (resultsMap.contains(resp.getValue())));

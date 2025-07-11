@@ -64,7 +64,7 @@ public class PipelinedClientIncrementTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<ResultMap>>> future = new CompletableFuture<>();
     when(region1SiteAClient.increment(eq(incrementData))).thenReturn(CompletableFuture.completedFuture(result));
 
-    store.increment(incrementData, routeKeyChOptional, intentData, hystrixSettings, responseHandler(future));
+    store.increment(incrementData, routeMetaChOptional, intentData, hystrixSettings, responseHandler(future));
 
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
@@ -82,7 +82,7 @@ public class PipelinedClientIncrementTest extends PipelinedClientBaseTest {
     throws ExecutionException, InterruptedException, TimeoutException {
     when(region1SiteAClient.increment(eq(incrementData))).thenReturn(CompletableFuture.completedFuture(result));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response =
-      syncStore.increment(incrementData, routeKeyChOptional, intentData, hystrixSettings);
+      syncStore.increment(incrementData, routeMetaChOptional, intentData, hystrixSettings);
 
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -99,7 +99,7 @@ public class PipelinedClientIncrementTest extends PipelinedClientBaseTest {
   public void testIncrementToRegion1SiteAWithNoIntent() throws ExecutionException, InterruptedException {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<ResultMap>>> future = new CompletableFuture<>();
     when(region1SiteAClient.increment(eq(incrementData))).thenReturn(CompletableFuture.completedFuture(result));
-    store.increment(incrementData, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+    store.increment(incrementData, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -121,7 +121,7 @@ public class PipelinedClientIncrementTest extends PipelinedClientBaseTest {
     when(region2SiteAClient.put(eq(intentStoreData))).thenReturn(respFuture);
     when(region1SiteAClient.increment(eq(incrementData))).thenReturn(CompletableFuture.completedFuture(result));
 
-    store.increment(incrementData, routeKeyChOptional, intentData, hystrixSettings, responseHandler(future));
+    store.increment(incrementData, routeMetaChOptional, intentData, hystrixSettings, responseHandler(future));
 
     try {
       future.get();
@@ -140,7 +140,7 @@ public class PipelinedClientIncrementTest extends PipelinedClientBaseTest {
   public void testIncrementToRegion2SiteA() throws ExecutionException, InterruptedException {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<ResultMap>>> future = new CompletableFuture<>();
     when(region2SiteAClient.increment(eq(incrementData))).thenReturn(CompletableFuture.completedFuture(result));
-    store.increment(incrementData, routeKeyHydOptional, intentData, hystrixSettings, responseHandler(future));
+    store.increment(incrementData, routeMetaHydOptional, intentData, hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -161,7 +161,7 @@ public class PipelinedClientIncrementTest extends PipelinedClientBaseTest {
     CompletableFuture respFuture = new CompletableFuture();
     respFuture.completeExceptionally(new PipelinedStoreException(errorMessage));
     when(region1SiteAClient.increment(eq(incrementData))).thenReturn(respFuture);
-    store.increment(incrementData, routeKeyChOptional, intentData, hystrixSettings, responseHandler(future));
+    store.increment(incrementData, routeMetaChOptional, intentData, hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
 
     assertTrue("Should have null response", (response.getOperationResponse().getValue() == null));
@@ -183,7 +183,7 @@ public class PipelinedClientIncrementTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.increment(eq(incrementData))).thenReturn(respFuture);
 
     PipelinedResponse<StoreOperationResponse<ResultMap>> response =
-      syncStore.increment(incrementData, routeKeyChOptional, intentData, hystrixSettings);
+      syncStore.increment(incrementData, routeMetaChOptional, intentData, hystrixSettings);
 
     assertTrue("Should have null response", (response.getOperationResponse().getValue() == null));
     assertTrue("Should not throw exception", (response.getOperationResponse().getError() != null));
@@ -224,7 +224,7 @@ public class PipelinedClientIncrementTest extends PipelinedClientBaseTest {
     store = generatePipelinedStore(storeConfig, storeRoute, registry, intentStore);
     CompletableFuture<PipelinedResponse<StoreOperationResponse<ResultMap>>> future = new CompletableFuture<>();
     when(region1SiteBClient.increment(eq(incrementData))).thenReturn(CompletableFuture.completedFuture(result));
-    store.increment(incrementData, routeKeyChOptional, intentData, hystrixSettings, responseHandler(future));
+    store.increment(incrementData, routeMetaChOptional, intentData, hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -251,7 +251,7 @@ public class PipelinedClientIncrementTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.increment(eq(incrementData))).thenReturn(respFuture);
     when(region1SiteBClient.increment(eq(incrementData))).thenReturn(CompletableFuture.completedFuture(result));
 
-    store.increment(incrementData, routeKeyChOptional, intentData, hystrixSettings, responseHandler(future));
+    store.increment(incrementData, routeMetaChOptional, intentData, hystrixSettings, responseHandler(future));
 
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
@@ -280,7 +280,7 @@ public class PipelinedClientIncrementTest extends PipelinedClientBaseTest {
     when(region1SiteBClient.increment(eq(incrementData))).thenReturn(respFuture);
     when(region2SiteAClient.increment(eq(incrementData))).thenReturn(CompletableFuture.completedFuture(result));
 
-    store.increment(incrementData, routeKeyChOptional, intentData, hystrixSettings, responseHandler(future));
+    store.increment(incrementData, routeMetaChOptional, intentData, hystrixSettings, responseHandler(future));
 
     PipelinedResponse<StoreOperationResponse<ResultMap>> response = future.get();
     if (response.getOperationResponse().getError() != null) {

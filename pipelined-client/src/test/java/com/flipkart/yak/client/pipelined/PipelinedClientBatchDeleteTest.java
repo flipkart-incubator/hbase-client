@@ -5,7 +5,6 @@ import com.flipkart.yak.client.exceptions.StoreException;
 import com.flipkart.yak.client.pipelined.exceptions.NoSiteAvailableToHandleException;
 import com.flipkart.yak.client.pipelined.exceptions.PipelinedStoreException;
 import com.flipkart.yak.client.pipelined.models.*;
-import com.flipkart.yak.client.pipelined.models.DataCenter;
 import com.flipkart.yak.client.pipelined.route.StoreRoute;
 import com.flipkart.yak.models.DeleteData;
 import com.flipkart.yak.models.DeleteDataBuilder;
@@ -58,7 +57,7 @@ public class PipelinedClientBatchDeleteTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<List<StoreOperationResponse<Void>>>> future = new CompletableFuture<>();
     CompletableFuture<Void> respFuture = CompletableFuture.completedFuture(null);
     when(region1SiteAClient.delete(eq(dataList))).thenReturn(Arrays.asList(respFuture, respFuture));
-    store.delete(dataList, routeKeyChOptional, intentData, hystrixSettings, responsesHandler(future));
+    store.delete(dataList, routeMetaChOptional, intentData, hystrixSettings, responsesHandler(future));
 
     PipelinedResponse<List<StoreOperationResponse<Void>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {
@@ -76,7 +75,7 @@ public class PipelinedClientBatchDeleteTest extends PipelinedClientBaseTest {
     CompletableFuture<Void> respFuture = CompletableFuture.completedFuture(null);
     when(region1SiteAClient.delete(eq(dataList))).thenReturn(Arrays.asList(respFuture, respFuture));
     PipelinedResponse<List<StoreOperationResponse<Void>>> response =
-        syncStore.delete(dataList, routeKeyChOptional, intentData, hystrixSettings);
+        syncStore.delete(dataList, routeMetaChOptional, intentData, hystrixSettings);
 
     response.getOperationResponse().stream().forEachOrdered(resp -> {
       assertTrue("Should have null response", (resp.getValue() == null));
@@ -92,7 +91,7 @@ public class PipelinedClientBatchDeleteTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<List<StoreOperationResponse<Void>>>> future = new CompletableFuture<>();
     CompletableFuture<Void> respFuture = CompletableFuture.completedFuture(null);
     when(region1SiteAClient.delete(eq(dataList))).thenReturn(Arrays.asList(respFuture, respFuture));
-    store.delete(dataList, routeKeyChOptional, Optional.empty(), hystrixSettings, responsesHandler(future));
+    store.delete(dataList, routeMetaChOptional, Optional.empty(), hystrixSettings, responsesHandler(future));
 
     PipelinedResponse<List<StoreOperationResponse<Void>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {
@@ -113,7 +112,7 @@ public class PipelinedClientBatchDeleteTest extends PipelinedClientBaseTest {
     CompletableFuture<Void> respFuture = CompletableFuture.completedFuture(null);
     when(region1SiteAClient.delete(eq(dataList))).thenReturn(Arrays.asList(respFuture, respFuture));
     when(region2SiteAClient.put(eq(intentStoreData))).thenReturn(respFailureFuture);
-    store.delete(dataList, routeKeyChOptional, intentData, hystrixSettings, responsesHandler(future));
+    store.delete(dataList, routeMetaChOptional, intentData, hystrixSettings, responsesHandler(future));
 
     try {
       future.get();
@@ -132,7 +131,7 @@ public class PipelinedClientBatchDeleteTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<List<StoreOperationResponse<Void>>>> future = new CompletableFuture<>();
     CompletableFuture<Void> respFuture = CompletableFuture.completedFuture(null);
     when(region2SiteAClient.delete(eq(dataList))).thenReturn(Arrays.asList(respFuture, respFuture));
-    store.delete(dataList, routeKeyHydOptional, intentData, hystrixSettings, responsesHandler(future));
+    store.delete(dataList, routeMetaHydOptional, intentData, hystrixSettings, responsesHandler(future));
 
     PipelinedResponse<List<StoreOperationResponse<Void>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {
@@ -152,7 +151,7 @@ public class PipelinedClientBatchDeleteTest extends PipelinedClientBaseTest {
     CompletableFuture respFailureFuture = new CompletableFuture();
     respFailureFuture.completeExceptionally(new PipelinedStoreException(errorMessage));
     when(region1SiteAClient.delete(eq(dataList))).thenReturn(Arrays.asList(respFailureFuture, respFailureFuture));
-    store.delete(dataList, routeKeyChOptional, intentData, hystrixSettings, responsesHandler(future));
+    store.delete(dataList, routeMetaChOptional, intentData, hystrixSettings, responsesHandler(future));
 
     PipelinedResponse<List<StoreOperationResponse<Void>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {
@@ -172,7 +171,7 @@ public class PipelinedClientBatchDeleteTest extends PipelinedClientBaseTest {
     respFailureFuture.completeExceptionally(new PipelinedStoreException(errorMessage));
     when(region1SiteAClient.delete(eq(dataList))).thenReturn(Arrays.asList(respFailureFuture, respFailureFuture));
     PipelinedResponse<List<StoreOperationResponse<Void>>> response =
-        syncStore.delete(dataList, routeKeyChOptional, intentData, hystrixSettings);
+        syncStore.delete(dataList, routeMetaChOptional, intentData, hystrixSettings);
     response.getOperationResponse().stream().forEachOrdered(resp -> {
       assertTrue("Should have null response", (resp.getValue() == null));
       assertTrue("Should throw exception", (resp.getError() != null));
@@ -214,7 +213,7 @@ public class PipelinedClientBatchDeleteTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<List<StoreOperationResponse<Void>>>> future = new CompletableFuture<>();
     CompletableFuture<Void> respFuture = CompletableFuture.completedFuture(null);
     when(region1SiteBClient.delete(eq(dataList))).thenReturn(Arrays.asList(respFuture, respFuture));
-    store.delete(dataList, routeKeyChOptional, intentData, hystrixSettings, responsesHandler(future));
+    store.delete(dataList, routeMetaChOptional, intentData, hystrixSettings, responsesHandler(future));
 
     PipelinedResponse<List<StoreOperationResponse<Void>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {
@@ -240,7 +239,7 @@ public class PipelinedClientBatchDeleteTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.delete(eq(dataList))).thenReturn(Arrays.asList(respFailureFuture, respFailureFuture));
     CompletableFuture<Void> respFuture = CompletableFuture.completedFuture(null);
     when(region1SiteBClient.delete(eq(dataList))).thenReturn(Arrays.asList(respFuture, respFuture));
-    store.delete(dataList, routeKeyChOptional, intentData, hystrixSettings, responsesHandler(future));
+    store.delete(dataList, routeMetaChOptional, intentData, hystrixSettings, responsesHandler(future));
 
     PipelinedResponse<List<StoreOperationResponse<Void>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {
@@ -267,7 +266,7 @@ public class PipelinedClientBatchDeleteTest extends PipelinedClientBaseTest {
     when(region1SiteBClient.delete(eq(dataList))).thenReturn(Arrays.asList(respFailureFuture, respFailureFuture));
     CompletableFuture<Void> respFuture = CompletableFuture.completedFuture(null);
     when(region2SiteAClient.delete(eq(dataList))).thenReturn(Arrays.asList(respFuture, respFuture));
-    store.delete(dataList, routeKeyChOptional, intentData, hystrixSettings, responsesHandler(future));
+    store.delete(dataList, routeMetaChOptional, intentData, hystrixSettings, responsesHandler(future));
 
     PipelinedResponse<List<StoreOperationResponse<Void>>> response = future.get();
     response.getOperationResponse().stream().forEachOrdered(resp -> {

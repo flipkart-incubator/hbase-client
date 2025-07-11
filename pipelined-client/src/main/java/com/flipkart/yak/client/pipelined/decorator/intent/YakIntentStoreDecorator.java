@@ -60,89 +60,89 @@ public class YakIntentStoreDecorator<T, V extends CircuitBreakerSettings>
   }
 
   @Override
-  public void increment(IncrementData incrementData, Optional<T> routeKey, Optional<YakIntentWriteRequest> intentData,
+  public void increment(IncrementData incrementData, Optional<T> routeMeta, Optional<YakIntentWriteRequest> intentData,
                         Optional<V> circuitBreakerSettings,
                         BiConsumer<PipelinedResponse<StoreOperationResponse<ResultMap>>, Throwable> handler) {
     List<Class> parameterTypes = Stream
-      .of(incrementData.getClass(), routeKey.getClass(), intentData.getClass(), circuitBreakerSettings.getClass(),
+      .of(incrementData.getClass(), routeMeta.getClass(), intentData.getClass(), circuitBreakerSettings.getClass(),
         BiConsumer.class).collect(Collectors.toList());
     List<Object> parameters =
-      Stream.of(incrementData, routeKey, intentData, circuitBreakerSettings, handler).collect(Collectors.toList());
+      Stream.of(incrementData, routeMeta, intentData, circuitBreakerSettings, handler).collect(Collectors.toList());
 
     handleIntentWrite(intentData, handler, new PipelinedRequest(INCREMENT_METHOD_NAME, parameterTypes, parameters));
   }
 
-  @Override public void put(StoreData data, Optional<T> routeKey, Optional<YakIntentWriteRequest> intentData,
-      Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<StoreOperationResponse<Void>>, Throwable> handler) {
+  @Override public void put(StoreData data, Optional<T> routeMeta, Optional<YakIntentWriteRequest> intentData,
+                            Optional<V> circuitBreakerSettings,
+                            BiConsumer<PipelinedResponse<StoreOperationResponse<Void>>, Throwable> handler) {
 
     List<Class> parameterTypes = Stream
-        .of(data.getClass(), routeKey.getClass(), intentData.getClass(), circuitBreakerSettings.getClass(),
+        .of(data.getClass(), routeMeta.getClass(), intentData.getClass(), circuitBreakerSettings.getClass(),
             BiConsumer.class).collect(Collectors.toList());
     List<Object> parameters =
-        Stream.of(data, routeKey, intentData, circuitBreakerSettings, handler).collect(Collectors.toList());
+        Stream.of(data, routeMeta, intentData, circuitBreakerSettings, handler).collect(Collectors.toList());
 
     handleIntentWrite(intentData, handler, new PipelinedRequest(PUT_METHOD_NAME, parameterTypes, parameters));
   }
 
-  @Override public void put(List<StoreData> data, Optional<T> routeKey, Optional<YakIntentWriteRequest> intentData,
-      Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<List<StoreOperationResponse<Void>>>, Throwable> handler) {
+  @Override public void put(List<StoreData> data, Optional<T> routeMeta, Optional<YakIntentWriteRequest> intentData,
+                            Optional<V> circuitBreakerSettings,
+                            BiConsumer<PipelinedResponse<List<StoreOperationResponse<Void>>>, Throwable> handler) {
     List<Class> parameterTypes = Stream
-        .of(List.class, routeKey.getClass(), intentData.getClass(), circuitBreakerSettings.getClass(), BiConsumer.class)
+        .of(List.class, routeMeta.getClass(), intentData.getClass(), circuitBreakerSettings.getClass(), BiConsumer.class)
         .collect(Collectors.toList());
     List<Object> parameters =
-        Stream.of(data, routeKey, intentData, circuitBreakerSettings, handler).collect(Collectors.toList());
+        Stream.of(data, routeMeta, intentData, circuitBreakerSettings, handler).collect(Collectors.toList());
 
     handleIntentWrite(intentData, handler, new PipelinedRequest(PUT_METHOD_NAME, parameterTypes, parameters));
   }
 
   @Override
-  public void checkAndPut(CheckAndStoreData data, Optional<T> routeKey, Optional<YakIntentWriteRequest> intentData,
-      Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<StoreOperationResponse<Boolean>>, Throwable> handler) {
+  public void checkAndPut(CheckAndStoreData data, Optional<T> routeMeta, Optional<YakIntentWriteRequest> intentData,
+                          Optional<V> circuitBreakerSettings,
+                          BiConsumer<PipelinedResponse<StoreOperationResponse<Boolean>>, Throwable> handler) {
     List<Class> parameterTypes = Stream
-        .of(data.getClass(), routeKey.getClass(), intentData.getClass(), circuitBreakerSettings.getClass(),
+        .of(data.getClass(), routeMeta.getClass(), intentData.getClass(), circuitBreakerSettings.getClass(),
             BiConsumer.class).collect(Collectors.toList());
     List<Object> parameters =
-        Stream.of(data, routeKey, intentData, circuitBreakerSettings, handler).collect(Collectors.toList());
+        Stream.of(data, routeMeta, intentData, circuitBreakerSettings, handler).collect(Collectors.toList());
 
     handleIntentWrite(intentData, handler, new PipelinedRequest(CHECK_PUT_METHOD_NAME, parameterTypes, parameters));
   }
 
-  @Override public void append(StoreData data, Optional<T> routeKey, Optional<YakIntentWriteRequest> intentData,
-      Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<StoreOperationResponse<ResultMap>>, Throwable> handler) {
+  @Override public void append(StoreData data, Optional<T> routeMeta, Optional<YakIntentWriteRequest> intentData,
+                               Optional<V> circuitBreakerSettings,
+                               BiConsumer<PipelinedResponse<StoreOperationResponse<ResultMap>>, Throwable> handler) {
     List<Class> parameterTypes = Stream
-        .of(data.getClass(), routeKey.getClass(), intentData.getClass(), circuitBreakerSettings.getClass(),
+        .of(data.getClass(), routeMeta.getClass(), intentData.getClass(), circuitBreakerSettings.getClass(),
             BiConsumer.class).collect(Collectors.toList());
     List<Object> parameters =
-        Stream.of(data, routeKey, intentData, circuitBreakerSettings, handler).collect(Collectors.toList());
+        Stream.of(data, routeMeta, intentData, circuitBreakerSettings, handler).collect(Collectors.toList());
 
     handleIntentWrite(intentData, handler, new PipelinedRequest(APPEND_METHOD_NAME, parameterTypes, parameters));
   }
 
-  @Override public void delete(List<DeleteData> data, Optional<T> routeKey, Optional<YakIntentWriteRequest> intentData,
-      Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<List<StoreOperationResponse<Void>>>, Throwable> handler) {
+  @Override public void delete(List<DeleteData> data, Optional<T> routeMeta, Optional<YakIntentWriteRequest> intentData,
+                               Optional<V> circuitBreakerSettings,
+                               BiConsumer<PipelinedResponse<List<StoreOperationResponse<Void>>>, Throwable> handler) {
     List<Class> parameterTypes = Stream
-        .of(List.class, routeKey.getClass(), intentData.getClass(), circuitBreakerSettings.getClass(), BiConsumer.class)
+        .of(List.class, routeMeta.getClass(), intentData.getClass(), circuitBreakerSettings.getClass(), BiConsumer.class)
         .collect(Collectors.toList());
     List<Object> parameters =
-        Stream.of(data, routeKey, intentData, circuitBreakerSettings, handler).collect(Collectors.toList());
+        Stream.of(data, routeMeta, intentData, circuitBreakerSettings, handler).collect(Collectors.toList());
 
     handleIntentWrite(intentData, handler, new PipelinedRequest(DELETE_METHOD_NAME, parameterTypes, parameters));
   }
 
   @Override
-  public void checkAndDelete(CheckAndDeleteData data, Optional<T> routeKey, Optional<YakIntentWriteRequest> intentData,
-      Optional<V> circuitBreakerSettings,
-      BiConsumer<PipelinedResponse<StoreOperationResponse<Boolean>>, Throwable> handler) {
+  public void checkAndDelete(CheckAndDeleteData data, Optional<T> routeMeta, Optional<YakIntentWriteRequest> intentData,
+                             Optional<V> circuitBreakerSettings,
+                             BiConsumer<PipelinedResponse<StoreOperationResponse<Boolean>>, Throwable> handler) {
     List<Class> parameterTypes = Stream
-        .of(data.getClass(), routeKey.getClass(), intentData.getClass(), circuitBreakerSettings.getClass(),
+        .of(data.getClass(), routeMeta.getClass(), intentData.getClass(), circuitBreakerSettings.getClass(),
             BiConsumer.class).collect(Collectors.toList());
     List<Object> parameters =
-        Stream.of(data, routeKey, intentData, circuitBreakerSettings, handler).collect(Collectors.toList());
+        Stream.of(data, routeMeta, intentData, circuitBreakerSettings, handler).collect(Collectors.toList());
 
     handleIntentWrite(intentData, handler, new PipelinedRequest(CHECK_DELETE_METHOD_NAME, parameterTypes, parameters));
   }

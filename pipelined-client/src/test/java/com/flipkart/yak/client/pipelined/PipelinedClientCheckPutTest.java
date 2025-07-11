@@ -5,7 +5,6 @@ import com.flipkart.yak.client.exceptions.StoreException;
 import com.flipkart.yak.client.pipelined.exceptions.NoSiteAvailableToHandleException;
 import com.flipkart.yak.client.pipelined.exceptions.PipelinedStoreException;
 import com.flipkart.yak.client.pipelined.models.*;
-import com.flipkart.yak.client.pipelined.models.DataCenter;
 import com.flipkart.yak.client.pipelined.route.StoreRoute;
 import com.flipkart.yak.models.CheckAndStoreData;
 import com.flipkart.yak.models.StoreDataBuilder;
@@ -57,7 +56,7 @@ public class PipelinedClientCheckPutTest extends PipelinedClientBaseTest {
   @Test public void testCheckPutToRegion1SiteA() throws ExecutionException, InterruptedException {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<Boolean>>> future = new CompletableFuture<>();
     when(region1SiteAClient.checkAndPut(eq(checkAndStoreData))).thenReturn(CompletableFuture.completedFuture(true));
-    store.checkAndPut(checkAndStoreData, routeKeyChOptional, intentData, hystrixSettings, responseHandler(future));
+    store.checkAndPut(checkAndStoreData, routeMetaChOptional, intentData, hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<Boolean>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -75,7 +74,7 @@ public class PipelinedClientCheckPutTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<Boolean>>> future = new CompletableFuture<>();
     when(region1SiteAClient.checkAndPut(eq(checkAndStoreData))).thenReturn(CompletableFuture.completedFuture(true));
     PipelinedResponse<StoreOperationResponse<Boolean>> response =
-        syncStore.checkAndPut(checkAndStoreData, routeKeyChOptional, intentData, hystrixSettings);
+        syncStore.checkAndPut(checkAndStoreData, routeMetaChOptional, intentData, hystrixSettings);
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
     }
@@ -91,7 +90,7 @@ public class PipelinedClientCheckPutTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<Boolean>>> future = new CompletableFuture<>();
     when(region1SiteAClient.checkAndPut(eq(checkAndStoreData))).thenReturn(CompletableFuture.completedFuture(true));
     store
-        .checkAndPut(checkAndStoreData, routeKeyChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
+        .checkAndPut(checkAndStoreData, routeMetaChOptional, Optional.empty(), hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<Boolean>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -111,7 +110,7 @@ public class PipelinedClientCheckPutTest extends PipelinedClientBaseTest {
     respFuture.completeExceptionally(new PipelinedStoreException(errorMessage));
     when(region2SiteAClient.put(eq(intentStoreData))).thenReturn(respFuture);
     when(region1SiteAClient.checkAndPut(eq(checkAndStoreData))).thenReturn(CompletableFuture.completedFuture(true));
-    store.checkAndPut(checkAndStoreData, routeKeyChOptional, intentData, hystrixSettings, responseHandler(future));
+    store.checkAndPut(checkAndStoreData, routeMetaChOptional, intentData, hystrixSettings, responseHandler(future));
     try {
       future.get();
       assertTrue("Should have thrown exception", false || (!runWithIntent));
@@ -128,7 +127,7 @@ public class PipelinedClientCheckPutTest extends PipelinedClientBaseTest {
   @Test public void testCheckPutToRegion2SiteA() throws ExecutionException, InterruptedException {
     CompletableFuture<PipelinedResponse<StoreOperationResponse<Boolean>>> future = new CompletableFuture<>();
     when(region2SiteAClient.checkAndPut(eq(checkAndStoreData))).thenReturn(CompletableFuture.completedFuture(true));
-    store.checkAndPut(checkAndStoreData, routeKeyHydOptional, intentData, hystrixSettings, responseHandler(future));
+    store.checkAndPut(checkAndStoreData, routeMetaHydOptional, intentData, hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<Boolean>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -148,7 +147,7 @@ public class PipelinedClientCheckPutTest extends PipelinedClientBaseTest {
     CompletableFuture respFuture = new CompletableFuture();
     respFuture.completeExceptionally(new PipelinedStoreException(errorMessage));
     when(region1SiteAClient.checkAndPut(eq(checkAndStoreData))).thenReturn(respFuture);
-    store.checkAndPut(checkAndStoreData, routeKeyChOptional, intentData, hystrixSettings, responseHandler(future));
+    store.checkAndPut(checkAndStoreData, routeMetaChOptional, intentData, hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<Boolean>> response = future.get();
 
     assertTrue("Should have null response", (response.getOperationResponse().getValue() == null));
@@ -168,7 +167,7 @@ public class PipelinedClientCheckPutTest extends PipelinedClientBaseTest {
     respFuture.completeExceptionally(new PipelinedStoreException(errorMessage));
     when(region1SiteAClient.checkAndPut(eq(checkAndStoreData))).thenReturn(respFuture);
     PipelinedResponse<StoreOperationResponse<Boolean>> response =
-        syncStore.checkAndPut(checkAndStoreData, routeKeyChOptional, intentData, hystrixSettings);
+        syncStore.checkAndPut(checkAndStoreData, routeMetaChOptional, intentData, hystrixSettings);
 
     assertTrue("Should have null response", (response.getOperationResponse().getValue() == null));
     assertTrue("Should not throw exception", (response.getOperationResponse().getError() != null));
@@ -207,7 +206,7 @@ public class PipelinedClientCheckPutTest extends PipelinedClientBaseTest {
     store = generatePipelinedStore(storeConfig, storeRoute, registry, intentStore);
     CompletableFuture<PipelinedResponse<StoreOperationResponse<Boolean>>> future = new CompletableFuture<>();
     when(region1SiteBClient.checkAndPut(eq(checkAndStoreData))).thenReturn(CompletableFuture.completedFuture(true));
-    store.checkAndPut(checkAndStoreData, routeKeyChOptional, intentData, hystrixSettings, responseHandler(future));
+    store.checkAndPut(checkAndStoreData, routeMetaChOptional, intentData, hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<Boolean>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -233,7 +232,7 @@ public class PipelinedClientCheckPutTest extends PipelinedClientBaseTest {
     respFuture.completeExceptionally(new PipelinedStoreException("Failed"));
     when(region1SiteAClient.checkAndPut(eq(checkAndStoreData))).thenReturn(respFuture);
     when(region1SiteBClient.checkAndPut(eq(checkAndStoreData))).thenReturn(CompletableFuture.completedFuture(true));
-    store.checkAndPut(checkAndStoreData, routeKeyChOptional, intentData, hystrixSettings, responseHandler(future));
+    store.checkAndPut(checkAndStoreData, routeMetaChOptional, intentData, hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<Boolean>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
@@ -259,7 +258,7 @@ public class PipelinedClientCheckPutTest extends PipelinedClientBaseTest {
     when(region1SiteAClient.checkAndPut(eq(checkAndStoreData))).thenReturn(respFuture);
     when(region1SiteBClient.checkAndPut(eq(checkAndStoreData))).thenReturn(respFuture);
     when(region2SiteAClient.checkAndPut(eq(checkAndStoreData))).thenReturn(CompletableFuture.completedFuture(true));
-    store.checkAndPut(checkAndStoreData, routeKeyChOptional, intentData, hystrixSettings, responseHandler(future));
+    store.checkAndPut(checkAndStoreData, routeMetaChOptional, intentData, hystrixSettings, responseHandler(future));
     PipelinedResponse<StoreOperationResponse<Boolean>> response = future.get();
     if (response.getOperationResponse().getError() != null) {
       throw new ExecutionException(response.getOperationResponse().getError());
