@@ -66,6 +66,23 @@ public interface SyncYakPipelinedStore<T, U extends IntentWriteRequest, V extend
       throws ExecutionException, InterruptedException, TimeoutException;
 
   /**
+   * @param data                   {@link BatchData} to put and delete the rows in a single batch
+   * @param routeMeta               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
+   *                               {@link HotRouter} for this operation
+   * @param intentData             An {@link Optional} {@link IntentWriteRequest} which is written by specific
+   *                               implementation {@link IntentStoreClient}
+   * @param circuitBreakerSettings An {@link Optional} {@link CircuitBreakerSettings} used by the circuit breaker if
+   *                               wrapped around by circuit breaker decorator
+   * @return {@link PipelinedResponse} which has response from one of the sites based on priority and selection
+   * @throws ExecutionException   on failure from all sites
+   * @throws InterruptedException on failure from all sites
+   * @throws TimeoutException     on timeout from all sites
+   */
+  PipelinedResponse<StoreOperationResponse<Void>> batch(BatchData data, Optional<T> routeMeta,
+      Optional<U> intentData, Optional<V> circuitBreakerSettings)
+      throws ExecutionException, InterruptedException, TimeoutException;
+
+  /**
    * @param data                   {@link List} of {@link StoreData} to put the rows in batches
    * @param routeMeta               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
    *                               {@link HotRouter} for this operation
