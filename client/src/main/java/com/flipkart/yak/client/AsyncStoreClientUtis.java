@@ -119,9 +119,11 @@ public class AsyncStoreClientUtis {
     KeyDistributor keyDistributor = keyDistributorPerTable.getOrDefault(data.getTableName(), NoDistribution.INSTANCE);
     byte[] rowKey = keyDistributor.enrichKey(data.getRow(), data.getPartitionKey());
     Delete delete = new Delete(rowKey);
-    for (Map.Entry<String, Set<String>> cfsEntry : data.getCfs().entrySet()) {
-      for (String col : cfsEntry.getValue()) {
-        delete.addColumn(cfsEntry.getKey().getBytes(), col.getBytes());
+    if(data.getCfs() != null) {
+      for (Map.Entry<String, Set<String>> cfsEntry : data.getCfs().entrySet()) {
+        for (String col : cfsEntry.getValue()) {
+          delete.addColumn(cfsEntry.getKey().getBytes(), col.getBytes());
+        }
       }
     }
     return delete;
