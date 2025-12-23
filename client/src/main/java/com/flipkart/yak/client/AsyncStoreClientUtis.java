@@ -127,6 +127,31 @@ public class AsyncStoreClientUtis {
     return delete;
   }
 
+  static BatchActions buildBatch(BatchData data, Map<String, KeyDistributor> keyDistributorPerTable,
+      Optional<Durability> durability)  throws IOException {
+    BatchActions batchActions = new BatchActions();
+    batchActions.actions = new ArrayList<>();
+    batchActions.indexPuts = new ArrayList<>();
+
+    if (data.getStoreDataList() != null && !data.getStoreDataList().isEmpty()) {
+      for (StoreData storeData : data.getStoreDataList()) {
+        StorePuts storePuts = buildStorePuts(storeData, keyDistributorPerTable, durability);
+        batchActions.actions.add(storePuts.entityPut);
+        if (storePuts.indexPuts != null) {
+          batchActions.indexPuts.addAll(storePuts.indexPuts);
+        }
+      }
+    }
+
+    if (data.getDeleteDataList() != null && !data.getDeleteDataList().isEmpty()) {
+      for (DeleteData deleteData : data.getDeleteDataList()) {
+        Delete delete = buildDelete(deleteData, keyDistributorPerTable);
+        batchActions.actions.add(delete);
+      }
+    }
+    return batchActions;
+  }
+
   static Mutation buildMutation(MutateData mutateData, Map<String, KeyDistributor> keyDistributorPerTable,
                                 Optional<Durability> durability) throws IOException {
     Mutation mutation = new Mutation();
@@ -444,6 +469,11 @@ public class AsyncStoreClientUtis {
 
   static class StorePuts {
     Put entityPut;
+    List<Put> indexPuts;
+  }
+
+  static class BatchActions {
+    List<Row> actions;
     List<Put> indexPuts;
   }
 
