@@ -42,6 +42,13 @@ public abstract class CircuitBreakerDecorator<T, U extends IntentWriteRequest, V
     pipelinedStore.put(data, routeMeta, intentData, circuitBreakerSettings, handler);
   }
 
+  @Override
+  public void batch(BatchData data, Optional<T> routeMeta, Optional<U> intentData,
+      Optional<V> circuitBreakerSettings,
+      BiConsumer<PipelinedResponse<StoreOperationResponse<Void>>, Throwable> handler) {
+    pipelinedStore.batch(data, routeMeta, intentData, circuitBreakerSettings, handler);
+  }
+
   @Override public void checkAndPut(CheckAndStoreData data, Optional<T> routeMeta, Optional<U> intentData,
                                     Optional<V> circuitBreakerSettings,
                                     BiConsumer<PipelinedResponse<StoreOperationResponse<Boolean>>, Throwable> handler) {

@@ -63,6 +63,13 @@ public abstract class IntentStoreDecorator<T, U extends IntentWriteRequest, V ex
     pipelinedStore.getByIndex(indexLookup, routeMeta, intentData, circuitBreakerSettings, handler);
   }
 
+  @Override
+  public void batch(BatchData data, Optional<T> routeMeta, Optional<U> intentData,
+                    Optional<V> circuitBreakerSettings,
+                    BiConsumer<PipelinedResponse<StoreOperationResponse<Void>>, Throwable> handler) {
+    pipelinedStore.batch(data, routeMeta, intentData, circuitBreakerSettings, handler);
+  }
+
   @Override public List<AsyncStoreClient> getAsyncStoreClient(Optional<T> routeMeta)
       throws PipelinedStoreDataCorruptException {
     return pipelinedStore.getAsyncStoreClient(routeMeta);

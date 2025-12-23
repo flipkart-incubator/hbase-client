@@ -343,6 +343,37 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
     }
   }
 
+  @Override
+  public void batch(BatchData data, Optional<T> routeMeta, Optional<U> intentData,
+      Optional<V> circuitBreakerSettings,
+      BiConsumer<PipelinedResponse<StoreOperationResponse<Void>>, Throwable> handler) {
+    publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
+    Timer.Context timer = publisher.getTimer(PipelinedClientMetricsPublisher.BATCH_TIMER);
+    publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_INIT);
+    try {
+      List<SiteId> sites = getSites(routeMeta, false);
+      CompletableFuture<StoreOperationResponse<Void>> future = CompletableFuture.completedFuture(null);
+      for (SiteId site : sites) {
+        future = future.thenComposeAsync(
+            value -> runClientOperation(data, site, value, BATCH_METHOD_NAME,
+                PipelinedClientMetricsPublisher.BATCH_FALLBACK), executor);
+      }
+
+      future.whenCompleteAsync((result, error) -> {
+        handler.accept(
+            new PipelinedResponse<>(result, !(sites.get(0).equals(result.getSite()))),
+            error);
+        publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_COMPLETE);
+        timer.close();
+      }, executor);
+    } catch (NoSiteAvailableToHandleException | PipelinedStoreDataCorruptException ex) {
+      handler.accept(null, ex);
+      publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_NO_SITES);
+      publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_COMPLETE);
+      timer.close();
+    }
+  }
+
   /**
    * {@inheritDoc}
    */
