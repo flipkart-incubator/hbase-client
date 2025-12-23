@@ -127,6 +127,19 @@ public interface AsyncStoreClient {
   public CompletableFuture<Boolean> checkAndMutate(CheckAndMutateData data);
 
   /**
+   * Puts and Deletes some data in the table, in batch. This can be used for group commit, or for submitting user defined batches.
+   *
+   * @param data The batch of mutations to apply specified by {@link BatchData} objects. The batch operation is done by
+   *             aggregating the iteration of the Puts and Deletes over the write buffer at the client-side for a single RPC call.
+   *
+   * @return The {@link CompletableFuture} async object that returns nothing if operation was
+   * successfully inserted and exception if any failure for each of the insert in order.
+   *
+   * @since 5.2.0
+   */
+  public CompletableFuture<Void> batch(BatchData data);
+
+  /**
    * Deletes some data in the table, in batch. This can be used for group commit, or for submitting user defined
    * batches.
    *
