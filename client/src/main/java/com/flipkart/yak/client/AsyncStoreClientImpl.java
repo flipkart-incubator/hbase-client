@@ -644,7 +644,7 @@ public class AsyncStoreClientImpl implements AsyncStoreClient {
       requestValidators.validateTableName(data.getTableName(), data.getStoreDataList());
       requestValidators.validateTableName(data.getTableName(), data.getDeleteDataList());
     } catch (RequestValidatorException ex) {
-      publisher.incrementErrorMetric(StoreClientMetricsPublisher.BATCH_DELETE_GEN_EXCEPTION, ex);
+      publisher.incrementErrorMetric(StoreClientMetricsPublisher.BATCH_GEN_EXCEPTION, ex);
       responseFuture.completeExceptionally(ex);
       return responseFuture;
     }
