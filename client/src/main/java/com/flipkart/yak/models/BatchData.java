@@ -10,8 +10,8 @@ public class BatchData extends IdentifierData {
 
   protected BatchData(String tableName, List<StoreData> storeDataList, List<DeleteData> deleteDataList) {
     super(tableName);
-    this.storeDataList = (storeDataList != null) ? storeDataList : new ArrayList<>();
-    this.deleteDataList = (deleteDataList != null) ? deleteDataList : new ArrayList<>();
+    this.storeDataList = (storeDataList != null) ? new ArrayList<>(storeDataList) : new ArrayList<>();
+    this.deleteDataList = (deleteDataList != null) ? new ArrayList<>(deleteDataList) : new ArrayList<>();
   }
 
   public List<StoreData> getStoreDataList() {
