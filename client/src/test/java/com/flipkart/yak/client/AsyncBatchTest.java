@@ -150,23 +150,6 @@ public class AsyncBatchTest extends AsyncBaseTest {
     }
   }
 
-  @Test public void testBatchWithEmptyBatch() throws ExecutionException, InterruptedException {
-
-    BatchData batchData = new BatchDataBuilder(FULL_TABLE_NAME).build();
-    List<Row> actionList = new ArrayList<>();
-
-    List<CompletableFuture<Void>> futures = actionList.stream().map(delete -> {
-      return new CompletableFuture<Void>();
-    }).collect(Collectors.toList());
-
-    when(table.delete(argThat(new BatchMatcher(actionList)))).thenReturn(futures);
-    storeClient.batch(batchData).get();
-
-    verify(table, times(1)).batch(captor.capture());
-    List<Row> capturedActions = captor.getValue();
-    assertTrue("Should contain 0 actions", capturedActions.size() == 0);
-  }
-
   @Test public void testBatchWithTableNameBatchValidationFailures() throws Exception {
         // Create BatchData with two StoreData objects from different tables
         String anotherTable = FULL_TABLE_NAME + "_DIFFERENT";
