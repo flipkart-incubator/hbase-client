@@ -662,11 +662,12 @@ public class AsyncStoreClientImpl implements AsyncStoreClient {
 
     AsyncTable table = connection.getTable(TableName.valueOf(data.getTableName()));
     List<StoreData> validationList = new ArrayList<>(data.getStoreDataList());
-    final AsyncStoreClientUtis.BatchActions finalBatchActions = batchActions;
+    List<Row> hbaseActions = batchActions.actions;
+    List<Put> hbaseIndexPuts = batchActions.indexPuts;
     payloadValidator.validate(validationList)
-            .thenComposeAsync(v -> updateIndexesIfPresent(data.getIndexTableName(), finalBatchActions.indexPuts), executor)
+            .thenComposeAsync(v -> updateIndexesIfPresent(data.getIndexTableName(), hbaseIndexPuts), executor)
             .thenComposeAsync(v -> {
-              List<CompletableFuture<Void>> futures = table.batch(finalBatchActions.actions);
+              List<CompletableFuture<Void>> futures = table.batch(hbaseActions);
               return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
             }, executor)
             .whenCompleteAsync((BiConsumer<Void, Throwable>) (value, error) -> {
