@@ -656,6 +656,7 @@ public class AsyncStoreClientImpl implements AsyncStoreClient {
       responseFuture.completeExceptionally(e);
       LOG.error("batch query failed with error: {}", e.getMessage());
       publisher.incrementErrorMetric(StoreClientMetricsPublisher.BATCH_GEN_EXCEPTION, e);
+      timer.close();
       return responseFuture;
     }
 
