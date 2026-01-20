@@ -130,7 +130,7 @@ public class AsyncStoreClientUtis {
   }
 
   static BatchActions buildBatch(BatchData data, Map<String, KeyDistributor> keyDistributorPerTable,
-      Optional<Durability> durability)  throws IOException {
+      Optional<Durability> durability) {
     BatchActions batchActions = new BatchActions();
     batchActions.actions = new ArrayList<>();
     batchActions.indexPuts = new ArrayList<>();

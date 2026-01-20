@@ -650,15 +650,7 @@ public class AsyncStoreClientImpl implements AsyncStoreClient {
     }
 
     AsyncStoreClientUtis.BatchActions batchActions = null;
-    try {
-      batchActions = AsyncStoreClientUtis.buildBatch(data, keyDistributorPerTable, durability);
-    } catch (IOException e) {
-      responseFuture.completeExceptionally(e);
-      LOG.error("batch query failed with error: {}", e.getMessage());
-      publisher.incrementErrorMetric(StoreClientMetricsPublisher.BATCH_GEN_EXCEPTION, e);
-      timer.close();
-      return responseFuture;
-    }
+    batchActions = AsyncStoreClientUtis.buildBatch(data, keyDistributorPerTable, durability);
 
     AsyncTable table = connection.getTable(TableName.valueOf(data.getTableName()));
     List<StoreData> validationList = new ArrayList<>(data.getStoreDataList());
