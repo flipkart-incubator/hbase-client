@@ -644,6 +644,7 @@ public class AsyncStoreClientImpl implements AsyncStoreClient {
       requestValidators.validateTableName(data.getTableName(), data.getStoreDataList());
       requestValidators.validateTableName(data.getTableName(), data.getDeleteDataList());
     } catch (RequestValidatorException ex) {
+      LOG.error("Failed batch query with {} puts and {} deletes", data.getStoreDataList().size(), data.getDeleteDataList().size(), ex);
       publisher.incrementErrorMetric(StoreClientMetricsPublisher.BATCH_GEN_EXCEPTION, ex);
       responseFuture.completeExceptionally(ex);
       timer.close();
