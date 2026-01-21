@@ -115,6 +115,13 @@ public class AsyncStoreClientUtis {
     return output;
   }
 
+  /**
+   * Creates an HBase {@link Delete} operation from a {@link DeleteData} object.
+   *
+   * @param data The data to be deleted.
+   * @param keyDistributorPerTable A map of key distributors for each table.
+   * @return The created {@link Delete} object.
+   */
   static Delete buildDelete(DeleteData data, Map<String, KeyDistributor> keyDistributorPerTable) {
     KeyDistributor keyDistributor = keyDistributorPerTable.getOrDefault(data.getTableName(), NoDistribution.INSTANCE);
     byte[] rowKey = keyDistributor.enrichKey(data.getRow(), data.getPartitionKey());
@@ -129,6 +136,14 @@ public class AsyncStoreClientUtis {
     return delete;
   }
 
+  /**
+   * Creates a {@link BatchActions} object containing a list of HBase {@link Row} operations from a {@link BatchData} object.
+   *
+   * @param data The batch data containing store and delete operations.
+   * @param keyDistributorPerTable A map of key distributors for each table.
+   * @param durability The durability of the operations.
+   * @return The created {@link BatchActions} object.
+   */
   static BatchActions buildBatch(BatchData data, Map<String, KeyDistributor> keyDistributorPerTable,
       Optional<Durability> durability) {
     BatchActions batchActions = new BatchActions();
@@ -474,6 +489,9 @@ public class AsyncStoreClientUtis {
     List<Put> indexPuts;
   }
 
+  /**
+   * A container for batch operations, holding lists of actions and index puts.
+   */
   static class BatchActions {
     List<Row> actions;
     List<Put> indexPuts;
