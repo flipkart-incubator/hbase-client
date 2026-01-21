@@ -649,8 +649,7 @@ public class AsyncStoreClientImpl implements AsyncStoreClient {
       return responseFuture;
     }
 
-    AsyncStoreClientUtis.BatchActions batchActions = null;
-    batchActions = AsyncStoreClientUtis.buildBatch(data, keyDistributorPerTable, durability);
+    AsyncStoreClientUtis.BatchActions batchActions = AsyncStoreClientUtis.buildBatch(data, keyDistributorPerTable, durability);
 
     AsyncTable table = connection.getTable(TableName.valueOf(data.getTableName()));
     List<StoreData> validationList = new ArrayList<>(data.getStoreDataList());
