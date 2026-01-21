@@ -37,7 +37,7 @@ public class BatchDataBuilder {
   }
 
   public BatchData build() {
-    if(storeDataList.size() + deleteDataList.size() == 0) {
+    if (storeDataList.size() + deleteDataList.size() == 0) {
       throw new IllegalStateException("At least one StoreData or DeleteData must be added to build BatchData");
     }
     return new BatchData(tableName, storeDataList, deleteDataList);
