@@ -646,6 +646,7 @@ public class AsyncStoreClientImpl implements AsyncStoreClient {
     } catch (RequestValidatorException ex) {
       publisher.incrementErrorMetric(StoreClientMetricsPublisher.BATCH_GEN_EXCEPTION, ex);
       responseFuture.completeExceptionally(ex);
+      timer.close();
       return responseFuture;
     }
 
