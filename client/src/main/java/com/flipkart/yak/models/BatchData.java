@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * {@inheritDoc}
- *
  * A container for batch operations, holding lists of data to be stored and deleted.
  */
 public class BatchData extends IdentifierData {
