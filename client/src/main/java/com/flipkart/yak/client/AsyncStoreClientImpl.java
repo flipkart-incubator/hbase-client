@@ -631,6 +631,63 @@ public class AsyncStoreClientImpl implements AsyncStoreClient {
   /**
    * {@inheritDoc}
    */
+  @Override
+  public CompletableFuture<Void> batch(BatchData data) {
+    publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
+    Timer.Context timer = publisher.getTimer(StoreClientMetricsPublisher.BATCH_TIMER);
+    publisher.incrementMetric(StoreClientMetricsPublisher.BATCH_INIT);
+
+    CompletableFuture<Void> responseFuture = new CompletableFuture<>();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Starting batch query with {} puts and {} deletes", data.getStoreDataList().size(),
+          data.getDeleteDataList().size());
+    }
+
+    try {
+      requestValidators.validateTableName(data.getTableName(), data.getStoreDataList());
+      requestValidators.validateTableName(data.getTableName(), data.getDeleteDataList());
+    } catch (RequestValidatorException ex) {
+      LOG.error("Failed batch query with {} puts and {} deletes", data.getStoreDataList().size(), data.getDeleteDataList().size(), ex);
+      publisher.incrementErrorMetric(StoreClientMetricsPublisher.BATCH_GEN_EXCEPTION, ex);
+      responseFuture.completeExceptionally(ex);
+      timer.close();
+      return responseFuture;
+    }
+
+    AsyncStoreClientUtis.BatchActions batchActions = AsyncStoreClientUtis.buildBatch(data, keyDistributorPerTable, durability);
+
+    AsyncTable table = connection.getTable(TableName.valueOf(data.getTableName()));
+    List<StoreData> validationList = new ArrayList<>(data.getStoreDataList());
+    List<Row> hbaseActions = batchActions.actions;
+    List<Put> hbaseIndexPuts = batchActions.indexPuts;
+    payloadValidator.validate(validationList)
+            .thenComposeAsync(v -> updateIndexesIfPresent(data.getIndexTableName(), hbaseIndexPuts), executor)
+            .thenComposeAsync(v -> {
+              List<CompletableFuture<Void>> futures = table.batch(hbaseActions);
+              return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+            }, executor)
+            .whenCompleteAsync((BiConsumer<Void, Throwable>) (value, error) -> {
+              if (error != null) {
+                error = (error instanceof CompletionException) ? error.getCause() : error;
+                responseFuture.completeExceptionally(error);
+                LOG.error("Batch query failed with error: {}", error.getMessage());
+                publisher.incrementErrorMetric(StoreClientMetricsPublisher.BATCH_GEN_EXCEPTION, error);
+              } else {
+                responseFuture.complete(value);
+              }
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("Completed batch query with {} puts and {} deletes", data.getStoreDataList().size(),
+                        data.getDeleteDataList().size());
+              }
+              publisher.incrementMetric(StoreClientMetricsPublisher.BATCH_COMPLETE);
+              timer.close();
+            }, executor);
+    return responseFuture;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
   @Override public <T extends GetRow> CompletableFuture<ResultMap> get(T row) {
     publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
     Timer.Context timer = publisher.getTimer(StoreClientMetricsPublisher.GET_TIMER);

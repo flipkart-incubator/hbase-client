@@ -92,6 +92,27 @@ public class SyncYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V extend
     return completableFuture.get(writeTimeoutInMillis, TimeUnit.MILLISECONDS);
   }
 
+  @Override
+  public PipelinedResponse<StoreOperationResponse<Void>> batch(BatchData data, Optional<T> routeMeta,
+      Optional<U> intentData, Optional<V> circuitBreakerSettings)
+      throws ExecutionException, InterruptedException, TimeoutException {
+    CompletableFuture<PipelinedResponse<StoreOperationResponse<Void>>> completableFuture = new CompletableFuture<>();
+
+    pipelinedStore.batch(data, routeMeta, intentData, circuitBreakerSettings,
+        (BiConsumer<PipelinedResponse<StoreOperationResponse<Void>>, Throwable>) (response, error) -> {
+          if (error != null) {
+            completableFuture.completeExceptionally(error);
+          } else if (response != null) {
+            completableFuture.complete(response);
+          } else {
+            error = new PipelinedClientInitializationException(UNEXPECTED_ERROR_MESSAGE);
+            completableFuture.completeExceptionally(error);
+          }
+        });
+
+    return completableFuture.get(writeTimeoutInMillis, TimeUnit.MILLISECONDS);
+  }
+
   /**
    * {@inheritDoc}
    */

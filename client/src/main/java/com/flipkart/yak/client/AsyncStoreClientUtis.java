@@ -115,16 +115,58 @@ public class AsyncStoreClientUtis {
     return output;
   }
 
+  /**
+   * Creates an HBase {@link Delete} operation from a {@link DeleteData} object.
+   *
+   * @param data The data to be deleted.
+   * @param keyDistributorPerTable A map of key distributors for each table.
+   * @return The created {@link Delete} object.
+   */
   static Delete buildDelete(DeleteData data, Map<String, KeyDistributor> keyDistributorPerTable) {
     KeyDistributor keyDistributor = keyDistributorPerTable.getOrDefault(data.getTableName(), NoDistribution.INSTANCE);
     byte[] rowKey = keyDistributor.enrichKey(data.getRow(), data.getPartitionKey());
     Delete delete = new Delete(rowKey);
-    for (Map.Entry<String, Set<String>> cfsEntry : data.getCfs().entrySet()) {
-      for (String col : cfsEntry.getValue()) {
-        delete.addColumn(cfsEntry.getKey().getBytes(), col.getBytes());
+    if (data.getCfs() != null) {
+      for (Map.Entry<String, Set<String>> cfsEntry : data.getCfs().entrySet()) {
+        for (String col : cfsEntry.getValue()) {
+          delete.addColumn(cfsEntry.getKey().getBytes(), col.getBytes());
+        }
       }
     }
     return delete;
+  }
+
+  /**
+   * Creates a {@link BatchActions} object containing a list of HBase {@link Row} operations from a {@link BatchData} object.
+   *
+   * @param data The batch data containing store and delete operations.
+   * @param keyDistributorPerTable A map of key distributors for each table.
+   * @param durability The durability of the operations.
+   * @return The created {@link BatchActions} object.
+   */
+  static BatchActions buildBatch(BatchData data, Map<String, KeyDistributor> keyDistributorPerTable,
+      Optional<Durability> durability) {
+    BatchActions batchActions = new BatchActions();
+    batchActions.actions = new ArrayList<>();
+    batchActions.indexPuts = new ArrayList<>();
+
+    if (data.getStoreDataList() != null && !data.getStoreDataList().isEmpty()) {
+      for (StoreData storeData : data.getStoreDataList()) {
+        StorePuts storePuts = buildStorePuts(storeData, keyDistributorPerTable, durability);
+        batchActions.actions.add(storePuts.entityPut);
+        if (storePuts.indexPuts != null) {
+          batchActions.indexPuts.addAll(storePuts.indexPuts);
+        }
+      }
+    }
+
+    if (data.getDeleteDataList() != null && !data.getDeleteDataList().isEmpty()) {
+      for (DeleteData deleteData : data.getDeleteDataList()) {
+        Delete delete = buildDelete(deleteData, keyDistributorPerTable);
+        batchActions.actions.add(delete);
+      }
+    }
+    return batchActions;
   }
 
   static Mutation buildMutation(MutateData mutateData, Map<String, KeyDistributor> keyDistributorPerTable,
@@ -444,6 +486,14 @@ public class AsyncStoreClientUtis {
 
   static class StorePuts {
     Put entityPut;
+    List<Put> indexPuts;
+  }
+
+  /**
+   * A container for batch operations, holding lists of actions and index puts.
+   */
+  static class BatchActions {
+    List<Row> actions;
     List<Put> indexPuts;
   }
 
