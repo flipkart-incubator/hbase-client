@@ -628,6 +628,9 @@ public class AsyncStoreClientImpl implements AsyncStoreClient {
     return responseFuture;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public CompletableFuture<Void> batch(BatchData data) {
     publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
