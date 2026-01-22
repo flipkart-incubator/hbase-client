@@ -42,5 +42,3 @@ public class BatchData extends IdentifierData {
     return deleteDataList;
   }
 }
-
-

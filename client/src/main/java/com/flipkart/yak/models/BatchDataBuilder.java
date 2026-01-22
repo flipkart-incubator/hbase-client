@@ -83,4 +83,3 @@ public class BatchDataBuilder {
     return new BatchData(tableName, storeDataList, deleteDataList);
   }
 }
-
