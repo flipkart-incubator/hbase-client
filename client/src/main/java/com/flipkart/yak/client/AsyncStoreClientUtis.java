@@ -370,8 +370,8 @@ public class AsyncStoreClientUtis {
 
     byte[] startRowKey = keyDistributor.enrichKey(scanData.getStartRow(), scanData.getPartitionKey());
     byte[] stopRowKey = keyDistributor.enrichKey(scanData.getStopRow(), scanData.getPartitionKey());
-    scan.setStartRow(startRowKey);
-    scan.setStopRow(stopRowKey);
+    scan.withStartRow(startRowKey, scanData.shouldIncludeStartRow());
+    scan.withStopRow(stopRowKey, scanData.shouldIncludeStopRow());
 
     if (scanData.getCaching() == -1 || (scanData.getLimit() != -1 && scanData.getCaching() > scanData.getLimit())) {
       scan.setCaching(scanData.getLimit());
