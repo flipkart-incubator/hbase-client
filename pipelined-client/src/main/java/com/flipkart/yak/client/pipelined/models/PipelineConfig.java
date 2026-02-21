@@ -18,6 +18,8 @@ public class PipelineConfig {
   private final String name;
   private int siteBootstrapRetryCount = 3;
   private long siteBootstrapRetryDelayInMillis = 3000;
+  /** Optional bound for the thread-pool work queue; empty means unbounded. */
+  private Optional<Integer> executorQueueCapacity = Optional.empty();
 
   public PipelineConfig(MultiRegionStoreConfig multiRegionStoreConfig, int poolSize, int siteBootstrapTimeoutInSeconds,
                         String name) {
@@ -45,6 +47,20 @@ public class PipelineConfig {
     this.siteBootstrapRetryDelayInMillis = siteBootstrapRetryDelayInMillis;
   }
 
+  public PipelineConfig(MultiRegionStoreConfig multiRegionStoreConfig, Optional<Map<String, KeyDistributor>> keyDistributorMap,
+                        int siteBootstrapTimeoutInSeconds, int poolSize, String name,
+                        int siteBootstrapRetryCount, long siteBootstrapRetryDelayInMillis, Integer executorQueueCapacity) {
+    this.multiRegionStoreConfig = multiRegionStoreConfig;
+    this.keyDistributorMap = keyDistributorMap;
+    this.siteBootstrapTimeoutInSeconds = siteBootstrapTimeoutInSeconds;
+    this.poolSize = poolSize;
+    this.name = name;
+    this.siteBootstrapRetryCount = siteBootstrapRetryCount;
+    this.siteBootstrapRetryDelayInMillis = siteBootstrapRetryDelayInMillis;
+    this.executorQueueCapacity = Optional.ofNullable(executorQueueCapacity);
+  }
+
+
   public MultiRegionStoreConfig getMultiRegionStoreConfig() {
     return multiRegionStoreConfig;
   }
@@ -71,5 +87,9 @@ public class PipelineConfig {
 
   public long getSiteBootstrapRetryDelayInMillis() {
     return siteBootstrapRetryDelayInMillis;
+  }
+
+  public Optional<Integer> getExecutorQueueCapacity() {
+    return executorQueueCapacity;
   }
 }
