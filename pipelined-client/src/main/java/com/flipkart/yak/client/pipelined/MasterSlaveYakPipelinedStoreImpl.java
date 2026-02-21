@@ -96,8 +96,13 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
    *
    * @param executorQueueCapacity optional queue capacity; empty for unbounded
    * @return a blocking queue for executor tasks
+   * @throws ConfigValidationFailedException if capacity is present but not positive
    */
-  private static LinkedBlockingQueue<Runnable> getWorkQueue(Optional<Integer> executorQueueCapacity) {
+  private static LinkedBlockingQueue<Runnable> getWorkQueue(Optional<Integer> executorQueueCapacity) throws ConfigValidationFailedException {
+    if (executorQueueCapacity.isPresent() && executorQueueCapacity.get() <= 0) {
+      throw new ConfigValidationFailedException(
+              "executorQueueCapacity must be positive, got: " + executorQueueCapacity.get());
+    }
     return executorQueueCapacity
             .map(capacity -> new LinkedBlockingQueue<Runnable>(capacity))
             .orElseGet(LinkedBlockingQueue::new);
