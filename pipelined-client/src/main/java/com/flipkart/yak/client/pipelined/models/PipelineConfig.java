@@ -18,7 +18,9 @@ public class PipelineConfig {
   private final String name;
   private int siteBootstrapRetryCount = 3;
   private long siteBootstrapRetryDelayInMillis = 3000;
-  /** Optional bound for the thread-pool work queue; empty means unbounded. */
+  /**
+   * Capacity for the thread-pool work queue. Default is 0, which means an unbounded queue; a positive value sets a bounded capacity.
+   */
   private int executorQueueCapacity;
 
   public PipelineConfig(MultiRegionStoreConfig multiRegionStoreConfig, int poolSize, int siteBootstrapTimeoutInSeconds,
@@ -50,9 +52,8 @@ public class PipelineConfig {
   public PipelineConfig(MultiRegionStoreConfig multiRegionStoreConfig, int siteBootstrapTimeoutInSeconds, int poolSize,
                         String name, Optional<Map<String, KeyDistributor>> keyDistributorMap, int siteBootstrapRetryCount,
                         long siteBootstrapRetryDelayInMillis, int executorQueueCapacity) {
-
     this(multiRegionStoreConfig, siteBootstrapTimeoutInSeconds, poolSize, name, keyDistributorMap, siteBootstrapRetryCount, siteBootstrapRetryDelayInMillis);
-    if(executorQueueCapacity <=0) {
+    if (executorQueueCapacity <= 0) {
       throw new IllegalArgumentException("executorQueueCapacity must be positive, got: " + executorQueueCapacity);
     }
     this.executorQueueCapacity = executorQueueCapacity;

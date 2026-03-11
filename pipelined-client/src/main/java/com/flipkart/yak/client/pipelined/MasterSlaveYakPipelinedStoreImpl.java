@@ -91,15 +91,16 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
   }
 
   /**
-   * Returns a work queue for the thread pool: bounded to the given capacity when present,
-   * otherwise unbounded.
+   * Returns a work queue for the thread pool: unbounded when capacity is 0, bounded to the given capacity when positive.
    *
-   * @param queueCapacity int queue capacity;
+   * @param queueCapacity queue capacity; 0 for unbounded, positive for bounded
    * @return a blocking queue for executor tasks
-   * if the capacity is 0 (default value) returns an unbounded queue else returns a bounded queue with provided capacity.
+   * @throws IllegalArgumentException if queueCapacity is negative
    */
   private static LinkedBlockingQueue<Runnable> getWorkQueue(int queueCapacity) throws ConfigValidationFailedException {
-    if(queueCapacity == 0) {
+    if(queueCapacity < 0 ){
+      throw new IllegalArgumentException("executorQueueCapacity must be positive, got: " + queueCapacity);
+    } else if( queueCapacity == 0 ) {
       return new LinkedBlockingQueue<Runnable>();
     } else {
       return new LinkedBlockingQueue<Runnable>(queueCapacity);
