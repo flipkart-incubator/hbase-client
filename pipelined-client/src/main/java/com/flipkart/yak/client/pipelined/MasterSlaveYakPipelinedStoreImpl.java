@@ -97,9 +97,9 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
    * @return a blocking queue for executor tasks
    * @throws IllegalArgumentException if queueCapacity is negative
    */
-  private static LinkedBlockingQueue<Runnable> getWorkQueue(int queueCapacity) throws ConfigValidationFailedException {
+  private static LinkedBlockingQueue<Runnable> getWorkQueue(int queueCapacity) {
     if(queueCapacity < 0 ){
-      throw new IllegalArgumentException("executorQueueCapacity must be positive, got: " + queueCapacity);
+      throw new IllegalArgumentException("executorQueueCapacity must be positive or 0, got: " + queueCapacity);
     } else if( queueCapacity == 0 ) {
       return new LinkedBlockingQueue<Runnable>();
     } else {
