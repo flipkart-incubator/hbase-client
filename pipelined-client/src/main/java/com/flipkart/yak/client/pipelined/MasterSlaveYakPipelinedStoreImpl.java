@@ -94,18 +94,16 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
    * Returns a work queue for the thread pool: bounded to the given capacity when present,
    * otherwise unbounded.
    *
-   * @param executorQueueCapacity optional queue capacity; empty for unbounded
+   * @param queueCapacity int queue capacity;
    * @return a blocking queue for executor tasks
-   * @throws ConfigValidationFailedException if capacity is present but not positive
+   * if the capacity is 0 (default value) returns an unbounded queue else returns a bounded queue with provided capacity.
    */
-  private static LinkedBlockingQueue<Runnable> getWorkQueue(Optional<Integer> executorQueueCapacity) throws ConfigValidationFailedException {
-    if (executorQueueCapacity.isPresent() && executorQueueCapacity.get() <= 0) {
-      throw new ConfigValidationFailedException(
-              "executorQueueCapacity must be positive, got: " + executorQueueCapacity.get());
+  private static LinkedBlockingQueue<Runnable> getWorkQueue(int queueCapacity) throws ConfigValidationFailedException {
+    if(queueCapacity == 0) {
+      return new LinkedBlockingQueue<Runnable>();
+    } else {
+      return new LinkedBlockingQueue<Runnable>(queueCapacity);
     }
-    return executorQueueCapacity
-            .map(capacity -> new LinkedBlockingQueue<Runnable>(capacity))
-            .orElseGet(LinkedBlockingQueue::new);
   }
 
   private SiteConfig mergeDefaultConfigWithSiteConfig(SiteConfig siteConfig, SiteConfig defaultConfig) {

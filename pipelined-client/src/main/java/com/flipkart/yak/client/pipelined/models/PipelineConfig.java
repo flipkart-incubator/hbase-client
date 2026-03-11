@@ -19,7 +19,7 @@ public class PipelineConfig {
   private int siteBootstrapRetryCount = 3;
   private long siteBootstrapRetryDelayInMillis = 3000;
   /** Optional bound for the thread-pool work queue; empty means unbounded. */
-  private Optional<Integer> executorQueueCapacity = Optional.empty();
+  private int executorQueueCapacity;
 
   public PipelineConfig(MultiRegionStoreConfig multiRegionStoreConfig, int poolSize, int siteBootstrapTimeoutInSeconds,
                         String name) {
@@ -47,17 +47,15 @@ public class PipelineConfig {
     this.siteBootstrapRetryDelayInMillis = siteBootstrapRetryDelayInMillis;
   }
 
-  public PipelineConfig(MultiRegionStoreConfig multiRegionStoreConfig, Optional<Map<String, KeyDistributor>> keyDistributorMap,
-                        int siteBootstrapTimeoutInSeconds, int poolSize, String name,
-                        int siteBootstrapRetryCount, long siteBootstrapRetryDelayInMillis, Integer executorQueueCapacity) {
-    this.multiRegionStoreConfig = multiRegionStoreConfig;
-    this.keyDistributorMap = keyDistributorMap;
-    this.siteBootstrapTimeoutInSeconds = siteBootstrapTimeoutInSeconds;
-    this.poolSize = poolSize;
-    this.name = name;
-    this.siteBootstrapRetryCount = siteBootstrapRetryCount;
-    this.siteBootstrapRetryDelayInMillis = siteBootstrapRetryDelayInMillis;
-    this.executorQueueCapacity = Optional.ofNullable(executorQueueCapacity);
+  public PipelineConfig(MultiRegionStoreConfig multiRegionStoreConfig, int siteBootstrapTimeoutInSeconds, int poolSize,
+                        String name, Optional<Map<String, KeyDistributor>> keyDistributorMap, int siteBootstrapRetryCount,
+                        long siteBootstrapRetryDelayInMillis, int executorQueueCapacity) {
+
+    this(multiRegionStoreConfig, siteBootstrapTimeoutInSeconds, poolSize, name, keyDistributorMap, siteBootstrapRetryCount, siteBootstrapRetryDelayInMillis);
+    if(executorQueueCapacity <=0) {
+      throw new IllegalArgumentException("executorQueueCapacity must be positive, got: " + executorQueueCapacity);
+    }
+    this.executorQueueCapacity = executorQueueCapacity;
   }
 
 
@@ -89,7 +87,7 @@ public class PipelineConfig {
     return siteBootstrapRetryDelayInMillis;
   }
 
-  public Optional<Integer> getExecutorQueueCapacity() {
+  public int getExecutorQueueCapacity() {
     return executorQueueCapacity;
   }
 }
