@@ -2,7 +2,11 @@ package com.flipkart.yak.client.pipelined;
 
 import com.flipkart.yak.client.pipelined.models.PipelineConfig;
 import com.flipkart.yak.client.pipelined.models.PipelinedResponse;
+import com.flipkart.yak.client.pipelined.models.ReadConsistency;
+import com.flipkart.yak.client.pipelined.models.Region;
 import com.flipkart.yak.client.pipelined.models.StoreOperationResponse;
+import com.flipkart.yak.client.pipelined.models.WriteConsistency;
+import com.flipkart.yak.client.pipelined.route.StoreRoute;
 import com.flipkart.yak.models.BatchData;
 import com.flipkart.yak.models.BatchDataBuilder;
 import com.flipkart.yak.models.Cell;
@@ -26,27 +30,31 @@ import com.flipkart.yak.models.StoreData;
 import com.flipkart.yak.models.StoreDataBuilder;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.hadoop.hbase.CompareOperator;
 import org.apache.hadoop.hbase.filter.ColumnPrefixFilter;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runners.Parameterized;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.junit.runner.RunWith;
+import org.junit.runners.BlockJUnit4ClassRunner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -55,11 +63,17 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
+
 /**
- * Executor queue checks and, for each pipelined primitive, happy/failure paths through
- * {@code CompletableFuture.whenComplete} into the supplied {@code BiConsumer}.
+ * Tests for {@link MasterSlaveYakPipelinedStoreImpl}.
+ *
+ * <p>{@link PipelinedClientBaseTest} uses {@code @PowerMockRunnerDelegate(Parameterized.class)}; this
+ * class uses {@link BlockJUnit4ClassRunner} so IntelliJ can run single methods by name.
  */
-@PowerMockIgnore({ "java.lang.*", "javax.management.*" })
+@RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(BlockJUnit4ClassRunner.class)
 public class MasterSlaveYakPipelinedStoreImplTest extends PipelinedClientBaseTest {
 
   private StoreData putData;
@@ -80,16 +94,6 @@ public class MasterSlaveYakPipelinedStoreImplTest extends PipelinedClientBaseTes
   private GetCellByIndex cellByIndex;
   private List<Cell> indexCellsResult;
   private StoreData appendData;
-
-  @Parameterized.Parameters(name = "hystrix={0}, intent={1}")
-  public static Collection<Object[]> parameters() {
-    return Arrays.asList(new Object[][] { { false, false } });
-  }
-
-  public MasterSlaveYakPipelinedStoreImplTest(boolean runWithHystrix, boolean runWithIntent) {
-    this.runWithHystrix = runWithHystrix;
-    this.runWithIntent = runWithIntent;
-  }
 
   @Before
   public void setupPrimitivePayloads() {
@@ -178,6 +182,73 @@ public class MasterSlaveYakPipelinedStoreImplTest extends PipelinedClientBaseTes
       LinkedBlockingQueue<?> q = (LinkedBlockingQueue<?>) ex.getQueue();
       assertEquals(capacity, q.remainingCapacity() + q.size());
       assertEquals(capacity, q.remainingCapacity());
+    } finally {
+      impl.shutdown();
+    }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void threeSitePutChainAfterTwoFailuresThirdSiteSucceedsCallbackOnStorePool() throws Exception {
+    StoreRoute preferredWriteRoute =
+        new StoreRoute(Region.REGION_1, ReadConsistency.PRIMARY_MANDATORY, WriteConsistency.PRIMARY_PREFERRED, router);
+    PipelineConfig cfg =
+        new PipelineConfig(buildConfig(), timeout, poolSize, STORE_NAME, Optional.of(keyDistributorMap),
+            siteBootstrapRetryCount, siteBootstrapRetryDelayInMillis);
+    @SuppressWarnings("rawtypes")
+    MasterSlaveYakPipelinedStoreImpl impl = new MasterSlaveYakPipelinedStoreImpl(cfg, preferredWriteRoute, registry);
+
+    Field exField = MasterSlaveYakPipelinedStoreImpl.class.getDeclaredField("executor");
+    exField.setAccessible(true);
+    ThreadPoolExecutor created = (ThreadPoolExecutor) exField.get(impl);
+    created.shutdownNow();
+    created.awaitTermination(5, TimeUnit.SECONDS);
+
+    AtomicInteger chainThreadIndex = new AtomicInteger();
+    ThreadFactory tf = r -> {
+      Thread t = new Thread(r, "three-site-chain-" + chainThreadIndex.getAndIncrement());
+      t.setDaemon(true);
+      return t;
+    };
+    ThreadPoolExecutor dual =
+        new ThreadPoolExecutor(2, 2, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), tf);
+    exField.set(impl, dual);
+
+    AtomicReference<String> lastSiteThread = new AtomicReference<>();
+    when(region1SiteAClient.put(eq(putData))).thenReturn(failedFuture(new RuntimeException("site1 fail")));
+    when(region1SiteBClient.put(eq(putData))).thenReturn(failedFuture(new RuntimeException("site2 fail")));
+    when(region2SiteAClient.put(eq(putData))).thenAnswer(invocation -> {
+      lastSiteThread.set(Thread.currentThread().getName());
+      return CompletableFuture.completedFuture(null);
+    });
+
+    AtomicReference<String> callbackThread = new AtomicReference<>();
+    CountDownLatch done = new CountDownLatch(1);
+    try {
+      impl.put(putData, routeMetaChOptional, Optional.empty(), hystrixSettings, (response, error) -> {
+        callbackThread.set(Thread.currentThread().getName());
+        assertNull(error);
+        assertNotNull(response);
+        PipelinedResponse<StoreOperationResponse<Void>> pr =
+            (PipelinedResponse<StoreOperationResponse<Void>>) response;
+        assertNotNull(pr.getOperationResponse());
+        assertNull(pr.getOperationResponse().getError());
+        assertEquals(Region2SiteA, pr.getOperationResponse().getSite());
+        done.countDown();
+      });
+
+      assertTrue(done.await(10, TimeUnit.SECONDS));
+      verify(region1SiteAClient, times(1)).put(putData);
+      verify(region1SiteBClient, times(1)).put(putData);
+      verify(region2SiteAClient, times(1)).put(putData);
+
+      String junitThread = Thread.currentThread().getName();
+      assertNotNull(lastSiteThread.get());
+      assertNotNull(callbackThread.get());
+      assertTrue(lastSiteThread.get().startsWith("three-site-chain-"));
+      assertTrue(callbackThread.get().startsWith("three-site-chain-"));
+      assertEquals("lastSiteThread is same as callbackThread", lastSiteThread.get(), callbackThread.get());
+      assertNotEquals("user callback must not run on the junit thread", junitThread, callbackThread.get());
     } finally {
       impl.shutdown();
     }
