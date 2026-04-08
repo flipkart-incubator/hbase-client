@@ -121,6 +121,25 @@ public interface SyncYakPipelinedStore<T, U extends IntentWriteRequest, V extend
       throws ExecutionException, InterruptedException, TimeoutException;
 
   /**
+   * @param dataList               {@link List} of {@link CheckAndStoreData} to check and put the rows in batches
+   * @param routeMeta               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
+   *                               {@link HotRouter} for this operation
+   * @param intentData             An {@link Optional} {@link IntentWriteRequest} which is written by specific
+   *                               implementation {@link IntentStoreClient}
+   * @param circuitBreakerSettings An {@link Optional} {@link CircuitBreakerSettings} used by the circuit breaker if
+   *                               wrapped around by circuit breaker decorator
+   *
+   * @return {@link PipelinedResponse} with error response if fails, else per-item boolean response based on the
+   * outcome of each cas operation
+   *
+   * @throws ExecutionException   if upstream {@link java.util.concurrent.CompletableFuture} throws with failure
+   * @throws InterruptedException if upstream {@link java.util.concurrent.CompletableFuture} was interrupted
+   */
+  PipelinedResponse<List<StoreOperationResponse<Boolean>>> checkAndPut(List<CheckAndStoreData> dataList, Optional<T> routeMeta,
+      Optional<U> intentData, Optional<V> circuitBreakerSettings)
+      throws ExecutionException, InterruptedException, TimeoutException;
+
+  /**
    * @param data                   {@link StoreData} object for identifying the row to append the family/qualifier to
    * @param routeMeta               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
    *                               {@link HotRouter} for this operation

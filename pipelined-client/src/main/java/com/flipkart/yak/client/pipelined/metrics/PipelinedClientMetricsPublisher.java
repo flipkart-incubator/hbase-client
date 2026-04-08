@@ -23,6 +23,7 @@ public class PipelinedClientMetricsPublisher {
   private static final String METRIC_METHOD_BATCH_READ_NAME = "batchGet.";
   private static final String METRIC_METHOD_INDEX_READ_NAME = "indexGet.";
   private static final String METRIC_METHOD_INCREMENT_NAME = "increment.";
+  private static final String METRIC_METHOD_BATCH_CAS_NAME = "batchCas.";
   private static final String METRIC_METHOD_BATCH_NAME = "batch.";
   private static final String METRIC_REQUESTS_TYPE = "requests.";
   private static final String METRIC_FALLBACK = "fallback";
@@ -46,6 +47,7 @@ public class PipelinedClientMetricsPublisher {
   public static final String CHECK_DELETE_FALLBACK = "checkDeleteFallback";
   public static final String INDEX_GET_FALLBACK = "indexGetFallback";
   public static final String INCREMENT_FALLBACK = "incrementFallback";
+  public static final String BATCH_CAS_FALLBACK = "batchCasFallback";
   public static final String BATCH_FALLBACK = "batchFallback";
 
   public static final String APPEND_NO_SITES = "appendNoSites";
@@ -59,6 +61,7 @@ public class PipelinedClientMetricsPublisher {
   public static final String CHECK_DELETE_NO_SITES = "checkDeleteNoSites";
   public static final String INDEX_GET_NO_SITES = "indexGetNoSites";
   public static final String INCREMENT_NO_SITES = "incrementNoSites";
+  public static final String BATCH_CAS_NO_SITES = "batchCasNoSites";
   public static final String BATCH_NO_SITES = "batchNoSites";
 
   public static final String APPEND_INIT = "appendInit";
@@ -72,6 +75,7 @@ public class PipelinedClientMetricsPublisher {
   public static final String CHECK_DELETE_INIT = "checkDeleteInit";
   public static final String INDEX_GET_INIT = "indexGetInit";
   public static final String INCREMENT_INIT = "incrementInit";
+  public static final String BATCH_CAS_INIT = "batchCasInit";
   public static final String BATCH_INIT = "batchInit";
 
   public static final String APPEND_COMPLETE = "appendComplete";
@@ -85,6 +89,7 @@ public class PipelinedClientMetricsPublisher {
   public static final String CHECK_DELETE_COMPLETE = "checkDeleteComplete";
   public static final String INDEX_GET_COMPLETE = "indexGetComplete";
   public static final String INCREMENT_COMPLETE = "incrementComplete";
+  public static final String BATCH_CAS_COMPLETE = "batchCasComplete";
   public static final String BATCH_COMPLETE = "batchComplete";
 
   public static final String APPEND_TIMER = "appendTimer";
@@ -98,6 +103,7 @@ public class PipelinedClientMetricsPublisher {
   public static final String CHECK_DELETE_TIMER = "checkDeleteTimer";
   public static final String INDEX_GET_TIMER = "indexGetTimer";
   public static final String INCREMENT_TIMER = "incrementTimer";
+  public static final String BATCH_CAS_TIMER = "batchCasTimer";
   public static final String BATCH_TIMER = "batchTimer";
 
   private Map<String, String> meterMapping = new HashMap<>();
@@ -116,6 +122,7 @@ public class PipelinedClientMetricsPublisher {
     timerMapping.put(PUT_TIMER, METRIC_METHOD_PUT_NAME + METRIC_TIMER);
     timerMapping.put(BATCH_PUT_TIMER, METRIC_METHOD_BATCH_PUT_NAME + METRIC_TIMER);
     timerMapping.put(CAS_TIMER, METRIC_METHOD_CAS_NAME + METRIC_TIMER);
+    timerMapping.put(BATCH_CAS_TIMER, METRIC_METHOD_BATCH_CAS_NAME + METRIC_TIMER);
     timerMapping.put(GET_TIMER, METRIC_METHOD_READ_NAME + METRIC_TIMER);
     timerMapping.put(SCAN_TIMER, METRIC_METHOD_SCAN_NAME + METRIC_TIMER);
     timerMapping.put(BATCH_GET_TIMER, METRIC_METHOD_BATCH_READ_NAME + METRIC_TIMER);
@@ -129,6 +136,7 @@ public class PipelinedClientMetricsPublisher {
     meterMapping.put(PUT_NO_SITES, METRIC_METHOD_PUT_NAME + METRIC_REQUESTS_TYPE + METRIC_NO_SITES);
     meterMapping.put(BATCH_PUT_NO_SITES, METRIC_METHOD_BATCH_PUT_NAME + METRIC_REQUESTS_TYPE + METRIC_NO_SITES);
     meterMapping.put(CAS_NO_SITES, METRIC_METHOD_CAS_NAME + METRIC_REQUESTS_TYPE + METRIC_NO_SITES);
+    meterMapping.put(BATCH_CAS_NO_SITES, METRIC_METHOD_BATCH_CAS_NAME + METRIC_REQUESTS_TYPE + METRIC_NO_SITES);
     meterMapping.put(GET_NO_SITES, METRIC_METHOD_READ_NAME + METRIC_REQUESTS_TYPE + METRIC_NO_SITES);
     meterMapping.put(SCAN_NO_SITES, METRIC_METHOD_SCAN_NAME + METRIC_REQUESTS_TYPE + METRIC_NO_SITES);
     meterMapping.put(BATCH_GET_NO_SITES, METRIC_METHOD_BATCH_READ_NAME + METRIC_REQUESTS_TYPE + METRIC_NO_SITES);
@@ -142,6 +150,7 @@ public class PipelinedClientMetricsPublisher {
     meterMapping.put(PUT_FALLBACK, METRIC_METHOD_PUT_NAME + METRIC_REQUESTS_TYPE + METRIC_FALLBACK);
     meterMapping.put(BATCH_PUT_FALLBACK, METRIC_METHOD_BATCH_PUT_NAME + METRIC_REQUESTS_TYPE + METRIC_FALLBACK);
     meterMapping.put(CAS_FALLBACK, METRIC_METHOD_CAS_NAME + METRIC_REQUESTS_TYPE + METRIC_FALLBACK);
+    meterMapping.put(BATCH_CAS_FALLBACK, METRIC_METHOD_BATCH_CAS_NAME + METRIC_REQUESTS_TYPE + METRIC_FALLBACK);
     meterMapping.put(GET_FALLBACK, METRIC_METHOD_READ_NAME + METRIC_REQUESTS_TYPE + METRIC_FALLBACK);
     meterMapping.put(SCAN_FALLBACK, METRIC_METHOD_SCAN_NAME + METRIC_REQUESTS_TYPE + METRIC_FALLBACK);
     meterMapping.put(BATCH_GET_FALLBACK, METRIC_METHOD_BATCH_READ_NAME + METRIC_REQUESTS_TYPE + METRIC_FALLBACK);
@@ -156,6 +165,7 @@ public class PipelinedClientMetricsPublisher {
     meterMapping.put(PUT_INIT, METRIC_METHOD_PUT_NAME + METRIC_REQUESTS_TYPE + METRIC_INIT);
     meterMapping.put(BATCH_PUT_INIT, METRIC_METHOD_BATCH_PUT_NAME + METRIC_REQUESTS_TYPE + METRIC_INIT);
     meterMapping.put(CAS_INIT, METRIC_METHOD_CAS_NAME + METRIC_REQUESTS_TYPE + METRIC_INIT);
+    meterMapping.put(BATCH_CAS_INIT, METRIC_METHOD_BATCH_CAS_NAME + METRIC_REQUESTS_TYPE + METRIC_INIT);
     meterMapping.put(GET_INIT, METRIC_METHOD_READ_NAME + METRIC_REQUESTS_TYPE + METRIC_INIT);
     meterMapping.put(SCAN_INIT, METRIC_METHOD_SCAN_NAME + METRIC_REQUESTS_TYPE + METRIC_INIT);
     meterMapping.put(BATCH_GET_INIT, METRIC_METHOD_BATCH_READ_NAME + METRIC_REQUESTS_TYPE + METRIC_INIT);
@@ -169,6 +179,7 @@ public class PipelinedClientMetricsPublisher {
     meterMapping.put(GET_COMPLETE, METRIC_METHOD_READ_NAME + METRIC_REQUESTS_TYPE + METRIC_COMPLETE);
     meterMapping.put(SCAN_COMPLETE, METRIC_METHOD_SCAN_NAME + METRIC_REQUESTS_TYPE + METRIC_COMPLETE);
     meterMapping.put(CAS_COMPLETE, METRIC_METHOD_CAS_NAME + METRIC_REQUESTS_TYPE + METRIC_COMPLETE);
+    meterMapping.put(BATCH_CAS_COMPLETE, METRIC_METHOD_BATCH_CAS_NAME + METRIC_REQUESTS_TYPE + METRIC_COMPLETE);
     meterMapping.put(APPEND_COMPLETE, METRIC_METHOD_APPEND_NAME + METRIC_REQUESTS_TYPE + METRIC_COMPLETE);
     meterMapping.put(PUT_COMPLETE, METRIC_METHOD_PUT_NAME + METRIC_REQUESTS_TYPE + METRIC_COMPLETE);
     meterMapping.put(BATCH_PUT_COMPLETE, METRIC_METHOD_BATCH_PUT_NAME + METRIC_REQUESTS_TYPE + METRIC_COMPLETE);

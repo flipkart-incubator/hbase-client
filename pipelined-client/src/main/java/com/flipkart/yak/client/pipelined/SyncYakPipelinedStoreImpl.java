@@ -164,6 +164,31 @@ public class SyncYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V extend
   /**
    * {@inheritDoc}
    */
+  @Override public PipelinedResponse<List<StoreOperationResponse<Boolean>>> checkAndPut(List<CheckAndStoreData> dataList,
+                                                                                       Optional<T> routeMeta, Optional<U> intentData, Optional<V> circuitBreakerSettings)
+      throws ExecutionException, InterruptedException, TimeoutException {
+
+    CompletableFuture<PipelinedResponse<List<StoreOperationResponse<Boolean>>>> completableFuture =
+        new CompletableFuture<>();
+
+    pipelinedStore.checkAndPut(dataList, routeMeta, intentData, circuitBreakerSettings,
+            (BiConsumer<PipelinedResponse<List<StoreOperationResponse<Boolean>>>, Throwable>) (response, error) -> {
+              if (error != null) {
+                completableFuture.completeExceptionally(error);
+              } else if (response != null) {
+                completableFuture.complete(response);
+              } else {
+                error = new PipelinedClientInitializationException(UNEXPECTED_ERROR_MESSAGE);
+                completableFuture.completeExceptionally(error);
+              }
+            });
+
+    return completableFuture.get(writeTimeoutInMillis, TimeUnit.MILLISECONDS);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
   @Override public PipelinedResponse<StoreOperationResponse<ResultMap>> append(StoreData data, Optional<T> routeMeta,
       Optional<U> intentData, Optional<V> circuitBreakerSettings)
       throws ExecutionException, InterruptedException, TimeoutException {

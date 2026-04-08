@@ -444,6 +444,40 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
   /**
    * {@inheritDoc}
    */
+  @Override public void checkAndPut(List<CheckAndStoreData> dataList, Optional<T> routeMeta, Optional<U> intentData,
+                                    Optional<V> circuitBreakerSettings,
+                                    BiConsumer<PipelinedResponse<List<StoreOperationResponse<Boolean>>>, Throwable> handler) {
+
+    publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
+    Timer.Context timer = publisher.getTimer(PipelinedClientMetricsPublisher.BATCH_CAS_TIMER);
+    publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_CAS_INIT);
+    try {
+      List<SiteId> sites = getSites(routeMeta, false);
+      CompletableFuture<List<StoreOperationResponse<Boolean>>> future = CompletableFuture.completedFuture(null);
+      for (SiteId site : sites) {
+        future = future.thenComposeAsync(value -> runBatchClientOperation(dataList, site, value, BATCH_CHECK_PUT_METHOD_NAME,
+            PipelinedClientMetricsPublisher.BATCH_CAS_FALLBACK), executor);
+      }
+
+      future.whenCompleteAsync((results, error) -> {
+        boolean isStale =
+            !results.stream().filter(result -> !(sites.get(0).equals(result.getSite()))).collect(Collectors.toList())
+                .isEmpty();
+        handler.accept(new PipelinedResponse<>(results, isStale), error);
+        publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_CAS_COMPLETE);
+        timer.close();
+      }, executor);
+    } catch (NoSiteAvailableToHandleException | PipelinedStoreDataCorruptException ex) {
+      handler.accept(null, ex);
+      publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_CAS_NO_SITES);
+      publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_CAS_COMPLETE);
+      timer.close();
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
   @Override public void append(StoreData data, Optional<T> routeMeta, Optional<U> intentData,
                                Optional<V> circuitBreakerSettings,
                                BiConsumer<PipelinedResponse<StoreOperationResponse<ResultMap>>, Throwable> handler) {

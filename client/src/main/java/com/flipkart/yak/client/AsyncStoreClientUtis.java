@@ -169,6 +169,21 @@ public class AsyncStoreClientUtis {
     return batchActions;
   }
 
+  static CheckAndMutate buildCheckAndMutateForPut(CheckAndStoreData data, Map<String, KeyDistributor> keyDistributorPerTable,
+                                                   Optional<Durability> durability) {
+    StorePuts storePuts = buildStorePuts(data, keyDistributorPerTable, durability);
+    CheckVerifyData vdata = data.getVerifyData();
+    byte[] rowKey = storePuts.entityPut.getRow();
+
+    CheckAndMutate.Builder builder = CheckAndMutate.newBuilder(rowKey)
+        .ifEquals(vdata.getCf().getBytes(), vdata.getQualifier().getBytes(), vdata.getData());
+    if (vdata.getData() == null) {
+      builder = CheckAndMutate.newBuilder(rowKey)
+          .ifNotExists(vdata.getCf().getBytes(), vdata.getQualifier().getBytes());
+    }
+    return builder.build(storePuts.entityPut);
+  }
+
   static Mutation buildMutation(MutateData mutateData, Map<String, KeyDistributor> keyDistributorPerTable,
                                 Optional<Durability> durability) throws IOException {
     Mutation mutation = new Mutation();

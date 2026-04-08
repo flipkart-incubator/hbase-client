@@ -412,6 +412,83 @@ public class AsyncStoreClientImpl implements AsyncStoreClient {
   /**
    * {@inheritDoc}
    */
+  @SuppressWarnings({"java:S1612", "java:S3776"})
+  @Override public List<CompletableFuture<Boolean>> checkAndPut(List<CheckAndStoreData> dataList) {
+    publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
+    Timer.Context timer = publisher.getTimer(StoreClientMetricsPublisher.BATCH_CAS_TIMER);
+    publisher.incrementMetric(StoreClientMetricsPublisher.BATCH_CAS_INIT);
+
+    List<CompletableFuture<Boolean>> responseFutures =
+        dataList.stream().map(d -> (new CompletableFuture<Boolean>())).collect(Collectors.toList());
+
+    CompletableFuture.allOf(responseFutures.toArray(new CompletableFuture[responseFutures.size()]))
+            .thenApply(v -> responseFutures.stream().map(future -> future.join()).collect(Collectors.toList()))
+            .whenCompleteAsync((v, e) -> {
+      publisher.incrementMetric(StoreClientMetricsPublisher.BATCH_CAS_COMPLETE);
+      timer.close();
+    });
+
+    if (dataList.isEmpty()) {
+      return responseFutures;
+    }
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Starting batch check and put query with batch size: {}", dataList.size());
+    }
+    CheckAndStoreData firstRow = dataList.get(0);
+    try {
+      requestValidators.validateTableName(firstRow.getTableName(), dataList);
+    } catch (RequestValidatorException ex) {
+      responseFutures.stream().forEach(future -> future.completeExceptionally(ex));
+      LOG.error("Failed batch check and put query with batch size: {}", dataList.size());
+      publisher.incrementErrorMetric(StoreClientMetricsPublisher.BATCH_CAS_GEN_EXCEPTION, ex);
+      return responseFutures;
+    }
+
+    List<CheckAndMutate> checkAndMutates = new ArrayList<>();
+    List<Put> indexPuts = new ArrayList<>();
+    dataList.stream().forEachOrdered(data -> {
+      AsyncStoreClientUtis.StorePuts storePuts = AsyncStoreClientUtis.buildStorePuts(data, keyDistributorPerTable, durability);
+      indexPuts.addAll(storePuts.indexPuts);
+      checkAndMutates.add(AsyncStoreClientUtis.buildCheckAndMutateForPut(data, keyDistributorPerTable, durability));
+    });
+    List<StoreData> validationList = new ArrayList<StoreData>(dataList);
+    payloadValidator.validate(validationList)
+        .thenComposeAsync(value -> updateIndexesIfPresent(firstRow.getIndexTableName(), indexPuts), executor)
+        .thenComposeAsync(value -> CompletableFuture.runAsync(() -> {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Building batch check and put query with batch size: {}", dataList.size());
+          }
+          AsyncTable table = connection.getTable(TableName.valueOf(firstRow.getTableName()));
+          List<CompletableFuture<CheckAndMutateResult>> futures = table.checkAndMutate(checkAndMutates);
+          Iterator<CompletableFuture<Boolean>> iterator = responseFutures.iterator();
+          futures.stream().forEachOrdered(future -> {
+            CompletableFuture<Boolean> responseFuture =
+                (iterator.hasNext()) ? iterator.next() : (new CompletableFuture<Boolean>());
+            future.whenCompleteAsync((result, error) -> {
+              if (error != null) {
+                error = (error instanceof CompletionException) ? error.getCause() : error;
+                responseFuture.completeExceptionally(error);
+                LOG.error("Failed batch check and put query with error: {}", error.getMessage());
+                publisher.incrementErrorMetric(StoreClientMetricsPublisher.BATCH_CAS_GEN_EXCEPTION, error);
+              } else {
+                responseFuture.complete(result.isSuccess());
+              }
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("Completed batch check and put query with batch size: {}", dataList.size());
+              }
+            }, executor);
+          });
+        })).whenCompleteAsync((value, error) -> {
+      responseFutures.stream().forEach(future -> future.completeExceptionally(error));
+      publisher.incrementErrorMetric(StoreClientMetricsPublisher.BATCH_CAS_GEN_EXCEPTION, error);
+    });
+    return responseFutures;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
   @Override public CompletableFuture<Boolean> checkAndDelete(CheckAndDeleteData data) {
     publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
     Timer.Context timer = publisher.getTimer(StoreClientMetricsPublisher.CHECK_DELETE_TIMER);

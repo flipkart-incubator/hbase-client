@@ -140,6 +140,25 @@ public class HystrixCircuitBreakerDecorator<T, U extends IntentWriteRequest>
     }
   }
 
+  @Override public void checkAndPut(List<CheckAndStoreData> dataList, Optional<T> routeMeta, Optional<U> intentData,
+                                    Optional<HystrixSettings> circuitBreakerSettings,
+                                    BiConsumer<PipelinedResponse<List<StoreOperationResponse<Boolean>>>, Throwable> handler) {
+
+    Optional<HystrixSettings> settings = getHystrixSettings(circuitBreakerSettings, intentData);
+
+    if (settings.isPresent()) {
+      List<Class> parameterTypes =
+          Stream.of(List.class, routeMeta.getClass(), intentData.getClass(), circuitBreakerSettings.getClass())
+              .collect(Collectors.toList());
+      List<Object> parameters =
+          Stream.of(dataList, routeMeta, intentData, circuitBreakerSettings).collect(Collectors.toList());
+
+      handleHystrixRequest(settings.get(), handler, new PipelinedRequest(BATCH_CHECK_PUT_METHOD_NAME, parameterTypes, parameters));
+    } else {
+      super.checkAndPut(dataList, routeMeta, intentData, circuitBreakerSettings, handler);
+    }
+  }
+
   @Override public void checkAndPut(CheckAndStoreData data, Optional<T> routeMeta, Optional<U> intentData,
                                     Optional<HystrixSettings> circuitBreakerSettings,
                                     BiConsumer<PipelinedResponse<StoreOperationResponse<Boolean>>, Throwable> handler) {

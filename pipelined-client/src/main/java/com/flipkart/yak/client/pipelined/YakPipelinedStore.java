@@ -51,6 +51,7 @@ public interface YakPipelinedStore<T, U extends IntentWriteRequest, V extends Ci
   String CHECK_DELETE_METHOD_NAME = "checkAndDelete";
   String INCREMENT_METHOD_NAME = "increment";
   String BATCH_METHOD_NAME = "batch";
+  String BATCH_CHECK_PUT_METHOD_NAME = "checkAndPut";
 
   /**
    * Used to perform Increment operations on a single row atomically
@@ -118,6 +119,20 @@ public interface YakPipelinedStore<T, U extends IntentWriteRequest, V extends Ci
   void checkAndPut(CheckAndStoreData data, Optional<T> routeMeta, Optional<U> intentData,
       Optional<V> circuitBreakerSettings,
       BiConsumer<PipelinedResponse<StoreOperationResponse<Boolean>>, Throwable> handler);
+
+  /**
+   * @param dataList               {@link List} of {@link CheckAndStoreData} to check and put the rows in batches
+   * @param routeMeta               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
+   *                               {@link HotRouter} for this operation
+   * @param intentData             An {@link Optional} {@link IntentWriteRequest} which is written by specific
+   *                               implementation {@link IntentStoreClient}
+   * @param circuitBreakerSettings An {@link Optional} {@link CircuitBreakerSettings} used by the circuit breaker if
+   *                               wrapped around by circuit breaker decorator
+   * @param handler                Callback method to collect the response when the asynchronous response is ready
+   */
+  void checkAndPut(List<CheckAndStoreData> dataList, Optional<T> routeMeta, Optional<U> intentData,
+      Optional<V> circuitBreakerSettings,
+      BiConsumer<PipelinedResponse<List<StoreOperationResponse<Boolean>>>, Throwable> handler);
 
   /**
    * @param data                   {@link StoreData} object for identifying the row to append the family/qualifier to
