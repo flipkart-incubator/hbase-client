@@ -78,7 +78,7 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
     this.publisher.init();
     this.executor =
         new ThreadPoolExecutor(pipelineConfig.getPoolSize(), pipelineConfig.getPoolSize(), 0L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<Runnable>(), new ThreadFactory() {
+            getWorkQueue(pipelineConfig.getExecutorQueueCapacity()), new ThreadFactory() {
           private AtomicInteger counter = new AtomicInteger(0);
 
           @Override public Thread newThread(Runnable r) {
@@ -88,6 +88,23 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
 
     MultiRegionConfigValidator.validate(pipelineConfig.getMultiRegionStoreConfig());
     _createClients(this.pipelineConfig);
+  }
+
+  /**
+   * Returns a work queue for the thread pool: unbounded when capacity is 0, bounded to the given capacity when positive.
+   *
+   * @param queueCapacity queue capacity; 0 for unbounded, positive for bounded
+   * @return a blocking queue for executor tasks
+   * @throws IllegalArgumentException if queueCapacity is negative
+   */
+  private static LinkedBlockingQueue<Runnable> getWorkQueue(int queueCapacity) throws ConfigValidationFailedException {
+    if(queueCapacity < 0 ){
+      throw new ConfigValidationFailedException("executorQueueCapacity must be positive or 0, got: " + queueCapacity);
+    } else if( queueCapacity == 0 ) {
+      return new LinkedBlockingQueue<Runnable>();
+    } else {
+      return new LinkedBlockingQueue<Runnable>(queueCapacity);
+    }
   }
 
   private SiteConfig mergeDefaultConfigWithSiteConfig(SiteConfig siteConfig, SiteConfig defaultConfig) {
@@ -295,13 +312,13 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
           PipelinedClientMetricsPublisher.INCREMENT_FALLBACK), executor);
       }
 
-      future.whenCompleteAsync((result, error) -> {
+      future.whenComplete((result, error) -> {
         handler.accept(
-          new PipelinedResponse<>(result, !(sites.get(0).equals(result.getSite()))),
+          new PipelinedResponse<>(result, result != null && !(sites.get(0).equals(result.getSite()))),
           error);
         publisher.incrementMetric(PipelinedClientMetricsPublisher.INCREMENT_COMPLETE);
         timer.close();
-      }, executor);
+      });
     } catch (NoSiteAvailableToHandleException | PipelinedStoreDataCorruptException ex) {
       handler.accept(null, ex);
       publisher.incrementMetric(PipelinedClientMetricsPublisher.INCREMENT_NO_SITES);
@@ -328,13 +345,13 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
             PipelinedClientMetricsPublisher.PUT_FALLBACK), executor);
       }
 
-      future.whenCompleteAsync((result, error) -> {
+      future.whenComplete((result, error) -> {
         handler.accept(
-                new PipelinedResponse<>(result, !(sites.get(0).equals(result.getSite()))),
+                new PipelinedResponse<>(result, result != null && !(sites.get(0).equals(result.getSite()))),
             error);
         publisher.incrementMetric(PipelinedClientMetricsPublisher.PUT_COMPLETE);
         timer.close();
-      }, executor);
+      });
     } catch (NoSiteAvailableToHandleException | PipelinedStoreDataCorruptException ex) {
       handler.accept(null, ex);
       publisher.incrementMetric(PipelinedClientMetricsPublisher.PUT_NO_SITES);
@@ -359,13 +376,13 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
                 PipelinedClientMetricsPublisher.BATCH_FALLBACK), executor);
       }
 
-      future.whenCompleteAsync((result, error) -> {
+      future.whenComplete((result, error) -> {
         handler.accept(
-            new PipelinedResponse<>(result, !(sites.get(0).equals(result.getSite()))),
+            new PipelinedResponse<>(result, result != null && !(sites.get(0).equals(result.getSite()))),
             error);
         publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_COMPLETE);
         timer.close();
-      }, executor);
+      });
     } catch (NoSiteAvailableToHandleException | PipelinedStoreDataCorruptException ex) {
       handler.accept(null, ex);
       publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_NO_SITES);
@@ -392,14 +409,14 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
             PipelinedClientMetricsPublisher.BATCH_PUT_FALLBACK), executor);
       }
 
-      future.whenCompleteAsync((results, error) -> {
-        boolean isStale =
-            !results.stream().filter(result -> !(sites.get(0).equals(result.getSite()))).collect(Collectors.toList())
+      future.whenComplete((results, error) -> {
+        boolean isStale = results != null
+            && !results.stream().filter(result -> !(sites.get(0).equals(result.getSite()))).collect(Collectors.toList())
                 .isEmpty();
         handler.accept(new PipelinedResponse<>(results, isStale), error);
         publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_PUT_COMPLETE);
         timer.close();
-      }, executor);
+      });
     } catch (NoSiteAvailableToHandleException | PipelinedStoreDataCorruptException ex) {
       handler.accept(null, ex);
       publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_PUT_NO_SITES);
@@ -426,13 +443,13 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
             PipelinedClientMetricsPublisher.CAS_FALLBACK), executor);
       }
 
-      future.whenCompleteAsync((result, error) -> {
+      future.whenComplete((result, error) -> {
         handler.accept(
-                new PipelinedResponse<>(result, !(sites.get(0).equals(result.getSite()))),
+                new PipelinedResponse<>(result, result != null && !(sites.get(0).equals(result.getSite()))),
             error);
         publisher.incrementMetric(PipelinedClientMetricsPublisher.CAS_COMPLETE);
         timer.close();
-      }, executor);
+      });
     } catch (NoSiteAvailableToHandleException | PipelinedStoreDataCorruptException ex) {
       handler.accept(null, ex);
       publisher.incrementMetric(PipelinedClientMetricsPublisher.CAS_NO_SITES);
@@ -459,13 +476,13 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
             PipelinedClientMetricsPublisher.APPEND_FALLBACK), executor);
       }
 
-      future.whenCompleteAsync((result, error) -> {
+      future.whenComplete((result, error) -> {
         handler.accept(
-                new PipelinedResponse<>(result, !(sites.get(0).equals(result.getSite()))),
+                new PipelinedResponse<>(result, result != null && !(sites.get(0).equals(result.getSite()))),
             error);
         publisher.incrementMetric(PipelinedClientMetricsPublisher.APPEND_COMPLETE);
         timer.close();
-      }, executor);
+      });
     } catch (NoSiteAvailableToHandleException | PipelinedStoreDataCorruptException ex) {
       handler.accept(null, ex);
       publisher.incrementMetric(PipelinedClientMetricsPublisher.APPEND_NO_SITES);
@@ -492,14 +509,14 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
             PipelinedClientMetricsPublisher.BATCH_DELETE_FALLBACK), executor);
       }
 
-      future.whenCompleteAsync((results, error) -> {
-        boolean isStale =
-            !results.stream().filter(result -> !(sites.get(0).equals(result.getSite()))).collect(Collectors.toList())
+      future.whenComplete((results, error) -> {
+        boolean isStale = results != null
+            && !results.stream().filter(result -> !(sites.get(0).equals(result.getSite()))).collect(Collectors.toList())
                 .isEmpty();
         handler.accept(new PipelinedResponse<>(results, isStale), error);
         publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_DELETE_COMPLETE);
         timer.close();
-      }, executor);
+      });
     } catch (NoSiteAvailableToHandleException | PipelinedStoreDataCorruptException ex) {
       handler.accept(null, ex);
       publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_DELETE_NO_SITES);
@@ -525,13 +542,13 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
         future = future.thenComposeAsync(value -> runClientOperation(data, site, value, CHECK_DELETE_METHOD_NAME,
             PipelinedClientMetricsPublisher.CHECK_DELETE_FALLBACK), executor);
       }
-      future.whenCompleteAsync((result, error) -> {
+      future.whenComplete((result, error) -> {
         handler.accept(
-                new PipelinedResponse<>(result, !(sites.get(0).equals(result.getSite()))),
+                new PipelinedResponse<>(result, result != null && !(sites.get(0).equals(result.getSite()))),
             error);
         publisher.incrementMetric(PipelinedClientMetricsPublisher.CHECK_DELETE_COMPLETE);
         timer.close();
-      }, executor);
+      });
     } catch (NoSiteAvailableToHandleException | PipelinedStoreDataCorruptException ex) {
       handler.accept(null, ex);
       publisher.incrementMetric(PipelinedClientMetricsPublisher.CHECK_DELETE_NO_SITES);
@@ -556,12 +573,12 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
             PipelinedClientMetricsPublisher.SCAN_FALLBACK), executor);
       }
 
-      future.whenCompleteAsync((result, error) -> {
+      future.whenComplete((result, error) -> {
         handler.accept(new PipelinedResponse<>(result,
-                !(sites.get(0).equals(result.getSite()))), error);
+                result != null && !(sites.get(0).equals(result.getSite()))), error);
         publisher.incrementMetric(PipelinedClientMetricsPublisher.SCAN_COMPLETE);
         timer.close();
-      }, executor);
+      });
     } catch (NoSiteAvailableToHandleException | PipelinedStoreDataCorruptException ex) {
       handler.accept(null, ex);
       publisher.incrementMetric(PipelinedClientMetricsPublisher.SCAN_NO_SITES);
@@ -588,13 +605,13 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
             PipelinedClientMetricsPublisher.GET_FALLBACK), executor);
       }
 
-      future.whenCompleteAsync((result, error) -> {
+      future.whenComplete((result, error) -> {
         handler.accept(
-                new PipelinedResponse<>(result, !(sites.get(0).equals(result.getSite()))),
+                new PipelinedResponse<>(result, result != null && !(sites.get(0).equals(result.getSite()))),
             error);
         publisher.incrementMetric(PipelinedClientMetricsPublisher.GET_COMPLETE);
         timer.close();
-      }, executor);
+      });
     } catch (NoSiteAvailableToHandleException | PipelinedStoreDataCorruptException ex) {
       handler.accept(null, ex);
       publisher.incrementMetric(PipelinedClientMetricsPublisher.GET_NO_SITES);
@@ -621,14 +638,14 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
             PipelinedClientMetricsPublisher.BATCH_GET_FALLBACK), executor);
       }
 
-      future.whenCompleteAsync((results, error) -> {
-        boolean isStale =
-            !results.stream().filter(result -> !(sites.get(0).equals(result.getSite()))).collect(Collectors.toList())
+      future.whenComplete((results, error) -> {
+        boolean isStale = results != null
+            && !results.stream().filter(result -> !(sites.get(0).equals(result.getSite()))).collect(Collectors.toList())
                 .isEmpty();
         handler.accept(new PipelinedResponse<>(results, isStale), error);
         publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_GET_COMPLETE);
         timer.close();
-      }, executor);
+      });
     } catch (NoSiteAvailableToHandleException | PipelinedStoreDataCorruptException ex) {
       handler.accept(null, ex);
       publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_GET_NO_SITES);
@@ -655,12 +672,12 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
             PipelinedClientMetricsPublisher.INDEX_GET_FALLBACK), executor);
       }
 
-      future.whenCompleteAsync((result, error) -> {
+      future.whenComplete((result, error) -> {
         handler.accept(new PipelinedResponse<>(result,
-                !(sites.get(0).equals(result.getSite()))), error);
+                result != null && !(sites.get(0).equals(result.getSite()))), error);
         publisher.incrementMetric(PipelinedClientMetricsPublisher.INDEX_GET_COMPLETE);
         timer.close();
-      }, executor);
+      });
     } catch (NoSiteAvailableToHandleException | PipelinedStoreDataCorruptException ex) {
       handler.accept(null, ex);
       publisher.incrementMetric(PipelinedClientMetricsPublisher.INDEX_GET_NO_SITES);
@@ -687,13 +704,13 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
             PipelinedClientMetricsPublisher.INDEX_GET_FALLBACK), executor);
       }
 
-      future.whenCompleteAsync((result, error) -> {
+      future.whenComplete((result, error) -> {
         handler.accept(
-                new PipelinedResponse<>(result, !(sites.get(0).equals(result.getSite()))),
+                new PipelinedResponse<>(result, result != null && !(sites.get(0).equals(result.getSite()))),
             error);
         publisher.incrementMetric(PipelinedClientMetricsPublisher.INDEX_GET_COMPLETE);
         timer.close();
-      }, executor);
+      });
     } catch (NoSiteAvailableToHandleException | PipelinedStoreDataCorruptException ex) {
       handler.accept(null, ex);
       publisher.incrementMetric(PipelinedClientMetricsPublisher.INDEX_GET_NO_SITES);
