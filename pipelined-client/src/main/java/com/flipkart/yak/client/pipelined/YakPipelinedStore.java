@@ -120,6 +120,20 @@ public interface YakPipelinedStore<T, U extends IntentWriteRequest, V extends Ci
       BiConsumer<PipelinedResponse<StoreOperationResponse<Boolean>>, Throwable> handler);
 
   /**
+   * @param dataList               {@link List} of {@link CheckAndStoreData} to check and put the rows in batches
+   * @param routeMeta               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
+   *                               {@link HotRouter} for this operation
+   * @param intentData             An {@link Optional} {@link IntentWriteRequest} which is written by specific
+   *                               implementation {@link IntentStoreClient}
+   * @param circuitBreakerSettings An {@link Optional} {@link CircuitBreakerSettings} used by the circuit breaker if
+   *                               wrapped around by circuit breaker decorator
+   * @param handler                Callback method to collect the response when the asynchronous response is ready
+   */
+  void checkAndPut(List<CheckAndStoreData> dataList, Optional<T> routeMeta, Optional<U> intentData,
+      Optional<V> circuitBreakerSettings,
+      BiConsumer<PipelinedResponse<List<StoreOperationResponse<Boolean>>>, Throwable> handler);
+
+  /**
    * @param data                   {@link StoreData} object for identifying the row to append the family/qualifier to
    * @param routeMeta               An {@link Optional} route key which is used for selecting the {@link ReplicaSet} by
    *                               {@link HotRouter} for this operation

@@ -123,6 +123,19 @@ public class YakIntentStoreDecorator<T, V extends CircuitBreakerSettings>
     handleIntentWrite(intentData, handler, new PipelinedRequest(CHECK_PUT_METHOD_NAME, parameterTypes, parameters));
   }
 
+  @Override
+  public void checkAndPut(List<CheckAndStoreData> dataList, Optional<T> routeMeta,
+                          Optional<YakIntentWriteRequest> intentData, Optional<V> circuitBreakerSettings,
+                          BiConsumer<PipelinedResponse<List<StoreOperationResponse<Boolean>>>, Throwable> handler) {
+    List<Class> parameterTypes = Stream
+        .of(List.class, routeMeta.getClass(), intentData.getClass(), circuitBreakerSettings.getClass(),
+            BiConsumer.class).collect(Collectors.toList());
+    List<Object> parameters =
+        Stream.of(dataList, routeMeta, intentData, circuitBreakerSettings, handler).collect(Collectors.toList());
+
+    handleIntentWrite(intentData, handler, new PipelinedRequest(CHECK_PUT_METHOD_NAME, parameterTypes, parameters));
+  }
+
   @Override public void append(StoreData data, Optional<T> routeMeta, Optional<YakIntentWriteRequest> intentData,
                                Optional<V> circuitBreakerSettings,
                                BiConsumer<PipelinedResponse<StoreOperationResponse<ResultMap>>, Throwable> handler) {

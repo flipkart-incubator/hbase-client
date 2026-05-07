@@ -459,6 +459,50 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
   }
 
   /**
+   * Executes multiple independent check-and-put (CAS) operations as a single batch across all configured sites.
+   * Routes to the primary site first; on failure, falls back according to the configured {@link WriteConsistency}.
+   * Each per-row result is a {@link StoreOperationResponse}{@code <Boolean>}: {@code true} if the CAS succeeded,
+   * {@code false} if the check failed, or an error if an infrastructure failure occurred.
+   *
+   * @param dataList               {@link List} of {@link CheckAndStoreData} to check and put in batch.
+   *                               All rows must belong to the same table.
+   * @param routeMeta              {@link Optional} route key used to select the {@link MasterSlaveReplicaSet}
+   * @param intentData             {@link Optional} intent write request for intent-store decoration
+   * @param circuitBreakerSettings {@link Optional} circuit breaker settings
+   * @param handler                Callback with the {@link PipelinedResponse} holding per-row results
+   */
+  @Override public void checkAndPut(List<CheckAndStoreData> dataList, Optional<T> routeMeta, Optional<U> intentData,
+                                    Optional<V> circuitBreakerSettings,
+                                    BiConsumer<PipelinedResponse<List<StoreOperationResponse<Boolean>>>, Throwable> handler) {
+
+    publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
+    Timer.Context timer = publisher.getTimer(PipelinedClientMetricsPublisher.BATCH_CAS_TIMER);
+    publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_CAS_INIT);
+    try {
+      List<SiteId> sites = getSites(routeMeta, false);
+      CompletableFuture<List<StoreOperationResponse<Boolean>>> future = CompletableFuture.completedFuture(null);
+      for (SiteId site : sites) {
+        future = future.thenComposeAsync(value -> runBatchClientOperation(dataList, site, value, CHECK_PUT_METHOD_NAME,
+            PipelinedClientMetricsPublisher.BATCH_CAS_FALLBACK), executor);
+      }
+
+      future.whenComplete((results, error) -> {
+        boolean isStale = results != null
+            && !results.stream().filter(result -> !(sites.get(0).equals(result.getSite()))).collect(Collectors.toList())
+                .isEmpty();
+        handler.accept(new PipelinedResponse<>(results, isStale), error);
+        publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_CAS_COMPLETE);
+        timer.close();
+      });
+    } catch (NoSiteAvailableToHandleException | PipelinedStoreDataCorruptException ex) {
+      handler.accept(null, ex);
+      publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_CAS_NO_SITES);
+      publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_CAS_COMPLETE);
+      timer.close();
+    }
+  }
+
+  /**
    * {@inheritDoc}
    */
   @Override public void append(StoreData data, Optional<T> routeMeta, Optional<U> intentData,

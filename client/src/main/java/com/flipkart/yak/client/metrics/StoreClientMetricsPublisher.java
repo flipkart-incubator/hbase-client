@@ -21,6 +21,7 @@ public class StoreClientMetricsPublisher {
   private static final String METRIC_METHOD_BATCH_PUT_NAME = "batchPut.";
   private static final String METRIC_METHOD_BATCH_DELETE_NAME = "batchDelete.";
   private static final String METRIC_METHOD_BATCH_GET_NAME = "batchGet.";
+  private static final String METRIC_METHOD_BATCH_CAS_NAME = "batchCas.";
   private static final String METRIC_METHOD_BATCH_NAME = "batch.";
   private static final String METRIC_METHOD_INDEX_PUT_NAME = "indexPut.";
   private static final String METRIC_METHOD_INDEX_GET_NAME = "indexGet.";
@@ -56,6 +57,10 @@ public class StoreClientMetricsPublisher {
   public static final String CAS_INIT = "casInit";
   public static final String CAS_COMPLETE = "casComplete";
   public static final String CAS_GEN_EXCEPTION = "casGenericException";
+
+  public static final String BATCH_CAS_INIT = "batchCasInit";
+  public static final String BATCH_CAS_COMPLETE = "batchCasComplete";
+  public static final String BATCH_CAS_GEN_EXCEPTION = "batchCasGenericException";
 
   public static final String CHECK_DELETE_INIT = "checkDeleteInit";
   public static final String CHECK_DELETE_COMPLETE = "checkDeleteComplete";
@@ -107,6 +112,7 @@ public class StoreClientMetricsPublisher {
   public static final String BATCH_PUT_TIMER = "batchPutTimer";
   public static final String BATCH_TIMER = "batchTimer";
   public static final String CAS_TIMER = "casTimer";
+  public static final String BATCH_CAS_TIMER = "batchCasTimer";
   public static final String GET_TIMER = "getTimer";
   public static final String SCAN_TIMER = "scanTimer";
   public static final String BATCH_GET_TIMER = "batchGetTimer";
@@ -143,6 +149,7 @@ public class StoreClientMetricsPublisher {
     timerMapping.put(BATCH_PUT_TIMER, METRIC_METHOD_BATCH_PUT_NAME + METRIC_TIMER);
     timerMapping.put(BATCH_TIMER, METRIC_METHOD_BATCH_NAME + METRIC_TIMER);
     timerMapping.put(CAS_TIMER, METRIC_METHOD_CAS_NAME + METRIC_TIMER);
+    timerMapping.put(BATCH_CAS_TIMER, METRIC_METHOD_BATCH_CAS_NAME + METRIC_TIMER);
     timerMapping.put(GET_TIMER, METRIC_METHOD_GET_NAME + METRIC_TIMER);
     timerMapping.put(SCAN_TIMER, METRIC_METHOD_SCAN_NAME + METRIC_TIMER);
     timerMapping.put(BATCH_GET_TIMER, METRIC_METHOD_BATCH_GET_NAME + METRIC_TIMER);
@@ -175,6 +182,9 @@ public class StoreClientMetricsPublisher {
 
     meterMapping.put(CAS_INIT, METRIC_METHOD_CAS_NAME + METRIC_REQUESTS_TYPE + METRIC_INIT);
     meterMapping.put(CAS_COMPLETE, METRIC_METHOD_CAS_NAME + METRIC_REQUESTS_TYPE + METRIC_COMPLETE);
+
+    meterMapping.put(BATCH_CAS_INIT, METRIC_METHOD_BATCH_CAS_NAME + METRIC_REQUESTS_TYPE + METRIC_INIT);
+    meterMapping.put(BATCH_CAS_COMPLETE, METRIC_METHOD_BATCH_CAS_NAME + METRIC_REQUESTS_TYPE + METRIC_COMPLETE);
 
     meterMapping.put(CHECK_DELETE_INIT, METRIC_METHOD_CHECK_DELETE_NAME + METRIC_REQUESTS_TYPE + METRIC_INIT);
     meterMapping.put(CHECK_DELETE_COMPLETE, METRIC_METHOD_CHECK_DELETE_NAME + METRIC_REQUESTS_TYPE + METRIC_COMPLETE);
@@ -209,6 +219,7 @@ public class StoreClientMetricsPublisher {
     errorMapping.put(BATCH_GEN_EXCEPTION, METRIC_METHOD_BATCH_NAME + METRIC_EXCEPTIONS_TYPE);
     errorMapping.put(BATCH_PUT_GEN_EXCEPTION, METRIC_METHOD_BATCH_PUT_NAME + METRIC_EXCEPTIONS_TYPE);
     errorMapping.put(CAS_GEN_EXCEPTION, METRIC_METHOD_CAS_NAME + METRIC_EXCEPTIONS_TYPE);
+    errorMapping.put(BATCH_CAS_GEN_EXCEPTION, METRIC_METHOD_BATCH_CAS_NAME + METRIC_EXCEPTIONS_TYPE);
     errorMapping.put(CHECK_DELETE_GEN_EXCEPTION, METRIC_METHOD_CHECK_DELETE_NAME + METRIC_EXCEPTIONS_TYPE);
     errorMapping.put(DELETE_GEN_EXCEPTION, METRIC_METHOD_DELETE_NAME + METRIC_EXCEPTIONS_TYPE);
     errorMapping.put(BATCH_DELETE_GEN_EXCEPTION, METRIC_METHOD_BATCH_DELETE_NAME + METRIC_EXCEPTIONS_TYPE);

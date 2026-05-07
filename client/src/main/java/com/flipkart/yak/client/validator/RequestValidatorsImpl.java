@@ -1,6 +1,7 @@
 package com.flipkart.yak.client.validator;
 
 import com.flipkart.yak.client.exceptions.RequestValidatorException;
+import com.flipkart.yak.models.CheckAndStoreData;
 import com.flipkart.yak.models.DeleteData;
 import com.flipkart.yak.models.GetRow;
 import com.flipkart.yak.models.IdentifierData;
@@ -13,10 +14,12 @@ public class RequestValidatorsImpl implements RequestValidators {
   private static final Logger logger = LoggerFactory.getLogger(RequestValidatorsImpl.class);
   private final int maxBatchGetSize;
   private final int maxBatchDeleteSize;
+  private final int maxBatchCheckAndPutSize;
 
-  public RequestValidatorsImpl(int maxBatchGetSize, int maxBatchDeleteSize) {
+  public RequestValidatorsImpl(int maxBatchGetSize, int maxBatchDeleteSize, int maxBatchCheckAndPutSize) {
     this.maxBatchGetSize = maxBatchGetSize;
     this.maxBatchDeleteSize = maxBatchDeleteSize;
+    this.maxBatchCheckAndPutSize = maxBatchCheckAndPutSize;
   }
 
   public <T extends IdentifierData> void validateTableName(String tableName, List<T> operations)
@@ -40,6 +43,15 @@ public class RequestValidatorsImpl implements RequestValidators {
       logger.error("Request size is greater than the configured batch size {} ", maxBatchDeleteSize);
       throw new RequestValidatorException(
           "Request size should not be greater than the configured batch size " + maxBatchDeleteSize);
+    }
+  }
+
+  @Override public void validateBatchCheckAndPutSize(List<CheckAndStoreData> dataList)
+      throws RequestValidatorException {
+    if (dataList.size() > maxBatchCheckAndPutSize) {
+      logger.error("Request size is greater than the configured batch size {} ", maxBatchCheckAndPutSize);
+      throw new RequestValidatorException(
+          "Request size should not be greater than the configured batch size " + maxBatchCheckAndPutSize);
     }
   }
 
