@@ -61,7 +61,7 @@ public class PipelinedClientBatchCASTest extends PipelinedClientBaseTest {
   @Test public void testBatchCASAllSucceed() throws ExecutionException, InterruptedException {
     CompletableFuture<PipelinedResponse<List<StoreOperationResponse<Boolean>>>> future = new CompletableFuture<>();
     CompletableFuture<Boolean> successFuture = CompletableFuture.completedFuture(Boolean.TRUE);
-    when(region1SiteAClient.batchCheckAndPutForPipelined(eq(dataList)))
+    when(region1SiteAClient.checkAndPut(eq(dataList)))
         .thenReturn(Arrays.asList(successFuture, successFuture));
 
     store.checkAndPut(dataList, routeMetaChOptional, intentData, hystrixSettings, responsesHandler(future));
@@ -73,14 +73,14 @@ public class PipelinedClientBatchCASTest extends PipelinedClientBaseTest {
       assertTrue("Should match region1 siteA", resp.getSite().equals(Region1SiteA));
       assertTrue("Should not be stale", !response.isStale());
     });
-    verify(region1SiteAClient, times(1)).batchCheckAndPutForPipelined(dataList);
+    verify(region1SiteAClient, times(1)).checkAndPut(dataList);
     verify(region2SiteAClient, times((runWithIntent) ? 1 : 0)).put(intentStoreData);
   }
 
   @Test public void testBatchCASAllSucceedSync()
       throws ExecutionException, InterruptedException, TimeoutException {
     CompletableFuture<Boolean> successFuture = CompletableFuture.completedFuture(Boolean.TRUE);
-    when(region1SiteAClient.batchCheckAndPutForPipelined(eq(dataList)))
+    when(region1SiteAClient.checkAndPut(eq(dataList)))
         .thenReturn(Arrays.asList(successFuture, successFuture));
 
     PipelinedResponse<List<StoreOperationResponse<Boolean>>> response =
@@ -91,14 +91,14 @@ public class PipelinedClientBatchCASTest extends PipelinedClientBaseTest {
       assertTrue("Should not throw exception", resp.getError() == null);
       assertTrue("Should match region1 siteA", resp.getSite().equals(Region1SiteA));
     });
-    verify(region1SiteAClient, times(1)).batchCheckAndPutForPipelined(dataList);
+    verify(region1SiteAClient, times(1)).checkAndPut(dataList);
   }
 
   @Test public void testBatchCASPartialFalse() throws ExecutionException, InterruptedException {
     CompletableFuture<PipelinedResponse<List<StoreOperationResponse<Boolean>>>> future = new CompletableFuture<>();
     CompletableFuture<Boolean> successFuture = CompletableFuture.completedFuture(Boolean.TRUE);
     CompletableFuture<Boolean> failFuture = CompletableFuture.completedFuture(Boolean.FALSE);
-    when(region1SiteAClient.batchCheckAndPutForPipelined(eq(dataList)))
+    when(region1SiteAClient.checkAndPut(eq(dataList)))
         .thenReturn(Arrays.asList(successFuture, failFuture));
 
     store.checkAndPut(dataList, routeMetaChOptional, intentData, hystrixSettings, responsesHandler(future));
@@ -109,13 +109,13 @@ public class PipelinedClientBatchCASTest extends PipelinedClientBaseTest {
     assertTrue("Second CAS should return false", Boolean.FALSE.equals(results.get(1).getValue()));
     assertTrue("Should not throw exception on row 0", results.get(0).getError() == null);
     assertTrue("Should not throw exception on row 1", results.get(1).getError() == null);
-    verify(region1SiteAClient, times(1)).batchCheckAndPutForPipelined(dataList);
+    verify(region1SiteAClient, times(1)).checkAndPut(dataList);
   }
 
   @Test public void testBatchCASAllFalse() throws ExecutionException, InterruptedException {
     CompletableFuture<PipelinedResponse<List<StoreOperationResponse<Boolean>>>> future = new CompletableFuture<>();
     CompletableFuture<Boolean> failFuture = CompletableFuture.completedFuture(Boolean.FALSE);
-    when(region1SiteAClient.batchCheckAndPutForPipelined(eq(dataList)))
+    when(region1SiteAClient.checkAndPut(eq(dataList)))
         .thenReturn(Arrays.asList(failFuture, failFuture));
 
     store.checkAndPut(dataList, routeMetaChOptional, intentData, hystrixSettings, responsesHandler(future));
@@ -125,7 +125,7 @@ public class PipelinedClientBatchCASTest extends PipelinedClientBaseTest {
       assertTrue("CAS should return false", Boolean.FALSE.equals(resp.getValue()));
       assertTrue("Should not throw exception", resp.getError() == null);
     });
-    verify(region1SiteAClient, times(1)).batchCheckAndPutForPipelined(dataList);
+    verify(region1SiteAClient, times(1)).checkAndPut(dataList);
   }
 
   @Test public void testBatchCASWithInfraException() throws ExecutionException, InterruptedException {
@@ -133,7 +133,7 @@ public class PipelinedClientBatchCASTest extends PipelinedClientBaseTest {
     CompletableFuture<PipelinedResponse<List<StoreOperationResponse<Boolean>>>> future = new CompletableFuture<>();
     CompletableFuture<Boolean> errorFuture = new CompletableFuture<>();
     errorFuture.completeExceptionally(new PipelinedStoreException(errorMessage));
-    when(region1SiteAClient.batchCheckAndPutForPipelined(eq(dataList)))
+    when(region1SiteAClient.checkAndPut(eq(dataList)))
         .thenReturn(Arrays.asList(errorFuture, errorFuture));
 
     store.checkAndPut(dataList, routeMetaChOptional, intentData, hystrixSettings, responsesHandler(future));
@@ -145,12 +145,12 @@ public class PipelinedClientBatchCASTest extends PipelinedClientBaseTest {
       assertTrue("Should be PipelinedStoreException", resp.getError() instanceof PipelinedStoreException);
       assertTrue("Error message should match", resp.getError().getMessage().equals(errorMessage));
     });
-    verify(region1SiteAClient, times(1)).batchCheckAndPutForPipelined(dataList);
+    verify(region1SiteAClient, times(1)).checkAndPut(dataList);
   }
 
   @Test public void testBatchCASEmptyList() throws ExecutionException, InterruptedException {
     CompletableFuture<PipelinedResponse<List<StoreOperationResponse<Boolean>>>> future = new CompletableFuture<>();
-    when(region1SiteAClient.batchCheckAndPutForPipelined(eq(Collections.emptyList())))
+    when(region1SiteAClient.checkAndPut(eq(Collections.emptyList())))
         .thenReturn(Collections.emptyList());
 
     store.checkAndPut(Collections.emptyList(), routeMetaChOptional, intentData, hystrixSettings,
@@ -158,7 +158,7 @@ public class PipelinedClientBatchCASTest extends PipelinedClientBaseTest {
 
     PipelinedResponse<List<StoreOperationResponse<Boolean>>> response = future.get();
     assertTrue("Response list should be empty", response.getOperationResponse().isEmpty());
-    verify(region1SiteAClient, times(1)).batchCheckAndPutForPipelined(Collections.emptyList());
+    verify(region1SiteAClient, times(1)).checkAndPut(Collections.emptyList());
   }
 
   @Test public void testBatchCASNoSiteAvailable() throws InterruptedException {
@@ -174,7 +174,7 @@ public class PipelinedClientBatchCASTest extends PipelinedClientBaseTest {
           ex.getCause() instanceof NoSiteAvailableToHandleException);
       assertTrue("Message should match", ex.getCause().getMessage().equals(FAILED_TO_ROUTE_MESSAGE));
     }
-    verify(region1SiteAClient, times(0)).batchCheckAndPutForPipelined(dataList);
+    verify(region1SiteAClient, times(0)).checkAndPut(dataList);
   }
 
   @Test public void testBatchCASFallbackToSiteB() throws Exception {
@@ -188,7 +188,7 @@ public class PipelinedClientBatchCASTest extends PipelinedClientBaseTest {
     syncStore = new SyncYakPipelinedStoreImpl(store);
 
     CompletableFuture<Boolean> successFuture = CompletableFuture.completedFuture(Boolean.TRUE);
-    when(region1SiteBClient.batchCheckAndPutForPipelined(eq(dataList)))
+    when(region1SiteBClient.checkAndPut(eq(dataList)))
         .thenReturn(Arrays.asList(successFuture, successFuture));
 
     PipelinedResponse<List<StoreOperationResponse<Boolean>>> response =
@@ -200,7 +200,7 @@ public class PipelinedClientBatchCASTest extends PipelinedClientBaseTest {
       assertTrue("Should match Region1 SiteB", resp.getSite().equals(Region1SiteB));
       assertTrue("Should be stale since not primary site", response.isStale());
     });
-    verify(region1SiteAClient, times(0)).batchCheckAndPutForPipelined(dataList);
-    verify(region1SiteBClient, times(1)).batchCheckAndPutForPipelined(dataList);
+    verify(region1SiteAClient, times(0)).checkAndPut(dataList);
+    verify(region1SiteBClient, times(1)).checkAndPut(dataList);
   }
 }

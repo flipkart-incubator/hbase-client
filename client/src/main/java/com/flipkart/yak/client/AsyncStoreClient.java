@@ -140,6 +140,25 @@ public interface AsyncStoreClient {
   public CompletableFuture<Void> batch(BatchData data);
 
   /**
+   * Executes multiple independent check-and-put (CAS) operations as a single HBase batch RPC via
+   * {@code AsyncTable.checkAndMutate(List)}. Each item in {@code dataList} is evaluated independently:
+   * the put is applied only if its check passes. Index entries are written per-row only when the
+   * CAS for that row succeeds, preventing orphaned index entries on check failure.
+   *
+   * <p>This method is intended for use by the pipelined master/slave store and is exposed on this
+   * interface to allow dispatch via reflection in {@code runBatchClientOperation}, consistent with
+   * how other batch operations (put, delete, get) are dispatched.
+   *
+   * @param dataList The list of {@link CheckAndStoreData} describing what to check and put per row.
+   *                 All rows must belong to the same table.
+   * @return A positionally-aligned {@link List} of {@link CompletableFuture}{@code <Boolean>};
+   *         each future resolves to {@code true} if that row's CAS succeeded, {@code false} if the
+   *         check failed, or completes exceptionally on infrastructure error.
+   * @since 5.3.0
+   */
+  public List<CompletableFuture<Boolean>> checkAndPut(List<CheckAndStoreData> dataList);
+
+  /**
    * Deletes some data in the table, in batch. This can be used for group commit, or for submitting user defined
    * batches.
    *

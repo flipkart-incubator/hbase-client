@@ -51,10 +51,6 @@ public interface YakPipelinedStore<T, U extends IntentWriteRequest, V extends Ci
   String CHECK_DELETE_METHOD_NAME = "checkAndDelete";
   String INCREMENT_METHOD_NAME = "increment";
   String BATCH_METHOD_NAME = "batch";
-  // Not a reflection target — used only for equals-check in runBatchClientOperation to route to the
-  // AsyncStoreClientImpl cast path (batchCheckAndPutForPipelined). Shares the string value with
-  // CHECK_PUT_METHOD_NAME intentionally; the List vs single-item overload is distinguished by parameter type.
-  String BATCH_CHECK_PUT_METHOD_NAME = "checkAndPut";
 
   /**
    * Used to perform Increment operations on a single row atomically

@@ -133,7 +133,7 @@ public class YakIntentStoreDecorator<T, V extends CircuitBreakerSettings>
     List<Object> parameters =
         Stream.of(dataList, routeMeta, intentData, circuitBreakerSettings, handler).collect(Collectors.toList());
 
-    handleIntentWrite(intentData, handler, new PipelinedRequest(BATCH_CHECK_PUT_METHOD_NAME, parameterTypes, parameters));
+    handleIntentWrite(intentData, handler, new PipelinedRequest(CHECK_PUT_METHOD_NAME, parameterTypes, parameters));
   }
 
   @Override public void append(StoreData data, Optional<T> routeMeta, Optional<YakIntentWriteRequest> intentData,

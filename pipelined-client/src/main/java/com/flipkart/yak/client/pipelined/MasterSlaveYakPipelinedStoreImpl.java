@@ -265,35 +265,6 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
             data.stream().map(d -> (new StoreOperationResponse<W>(null, new SiteNotAvailable(), site)))
                 .collect(Collectors.toList()));
       }
-      if (BATCH_CHECK_PUT_METHOD_NAME.equals(method)) {
-        AsyncStoreClient client = clients.get(site);
-        if (!(client instanceof AsyncStoreClientImpl)) {
-          IllegalStateException ex = new IllegalStateException("Batch check-and-put requires AsyncStoreClientImpl");
-          return CompletableFuture.completedFuture(
-              data.stream().map(d -> new StoreOperationResponse<W>(null, ex, site)).collect(Collectors.toList()));
-        }
-        try {
-          @SuppressWarnings("unchecked")
-          List<CheckAndStoreData> casList = (List<CheckAndStoreData>) data;
-          List<CompletableFuture<Boolean>> rawFutures =
-              ((AsyncStoreClientImpl) client).batchCheckAndPutForPipelined(casList);
-          List<CompletableFuture<StoreOperationResponse<W>>> futures = rawFutures.stream().map(future -> future.handleAsync((value, error) -> {
-            if (error != null && !(error instanceof StoreDataNotFoundException)) {
-              LOG.error("Failed to {}, site: {}, error: {}", method, site, error.getMessage());
-            } else if (error == null) {
-              LOG.debug("Successful {}, site: {}", method, site);
-            }
-            @SuppressWarnings("unchecked")
-            W wrapped = (W) value;
-            return new StoreOperationResponse<>(wrapped, error, site);
-          }, executor)).collect(Collectors.toList());
-          return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).thenApplyAsync(
-              v -> futures.stream().map(future -> future.join()).collect(Collectors.toList()));
-        } catch (Exception ex) {
-          return CompletableFuture.completedFuture(
-              data.stream().map(d -> new StoreOperationResponse<W>(null, ex, site)).collect(Collectors.toList()));
-        }
-      }
       try {
         List<CompletableFuture<StoreOperationResponse<W>>> futures = (
             (List<CompletableFuture<W>>) AsyncStoreClient.class.getMethod(method, List.class)
@@ -488,7 +459,17 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
   }
 
   /**
-   * {@inheritDoc}
+   * Executes multiple independent check-and-put (CAS) operations as a single batch across all configured sites.
+   * Routes to the primary site first; on failure, falls back according to the configured {@link WriteConsistency}.
+   * Each per-row result is a {@link StoreOperationResponse}{@code <Boolean>}: {@code true} if the CAS succeeded,
+   * {@code false} if the check failed, or an error if an infrastructure failure occurred.
+   *
+   * @param dataList               {@link List} of {@link CheckAndStoreData} to check and put in batch.
+   *                               All rows must belong to the same table.
+   * @param routeMeta              {@link Optional} route key used to select the {@link MasterSlaveReplicaSet}
+   * @param intentData             {@link Optional} intent write request for intent-store decoration
+   * @param circuitBreakerSettings {@link Optional} circuit breaker settings
+   * @param handler                Callback with the {@link PipelinedResponse} holding per-row results
    */
   @Override public void checkAndPut(List<CheckAndStoreData> dataList, Optional<T> routeMeta, Optional<U> intentData,
                                     Optional<V> circuitBreakerSettings,
@@ -501,13 +482,13 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
       List<SiteId> sites = getSites(routeMeta, false);
       CompletableFuture<List<StoreOperationResponse<Boolean>>> future = CompletableFuture.completedFuture(null);
       for (SiteId site : sites) {
-        future = future.thenComposeAsync(value -> runBatchClientOperation(dataList, site, value, BATCH_CHECK_PUT_METHOD_NAME,
+        future = future.thenComposeAsync(value -> runBatchClientOperation(dataList, site, value, CHECK_PUT_METHOD_NAME,
             PipelinedClientMetricsPublisher.BATCH_CAS_FALLBACK), executor);
       }
 
       future.whenCompleteAsync((results, error) -> {
-        boolean isStale =
-            !results.stream().filter(result -> !(sites.get(0).equals(result.getSite()))).collect(Collectors.toList())
+        boolean isStale = results != null
+            && !results.stream().filter(result -> !(sites.get(0).equals(result.getSite()))).collect(Collectors.toList())
                 .isEmpty();
         handler.accept(new PipelinedResponse<>(results, isStale), error);
         publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_CAS_COMPLETE);

@@ -424,8 +424,9 @@ public class AsyncStoreClientImpl implements AsyncStoreClient {
    *         each future resolves to {@code true} if that row's CAS succeeded, {@code false} if the
    *         check failed, or completes exceptionally on infrastructure error.
    */
+  @Override
   @SuppressWarnings({"java:S1612", "java:S3776"})
-  public List<CompletableFuture<Boolean>> batchCheckAndPutForPipelined(List<CheckAndStoreData> dataList) {
+  public List<CompletableFuture<Boolean>> checkAndPut(List<CheckAndStoreData> dataList) {
     publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
     Timer.Context timer = publisher.getTimer(StoreClientMetricsPublisher.BATCH_CAS_TIMER);
     publisher.incrementMetric(StoreClientMetricsPublisher.BATCH_CAS_INIT);

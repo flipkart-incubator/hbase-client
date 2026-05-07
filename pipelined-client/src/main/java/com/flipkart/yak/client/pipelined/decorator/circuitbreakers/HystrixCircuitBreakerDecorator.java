@@ -153,7 +153,7 @@ public class HystrixCircuitBreakerDecorator<T, U extends IntentWriteRequest>
       List<Object> parameters =
           Stream.of(dataList, routeMeta, intentData, circuitBreakerSettings).collect(Collectors.toList());
 
-      handleHystrixRequest(settings.get(), handler, new PipelinedRequest(BATCH_CHECK_PUT_METHOD_NAME, parameterTypes, parameters));
+      handleHystrixRequest(settings.get(), handler, new PipelinedRequest(CHECK_PUT_METHOD_NAME, parameterTypes, parameters));
     } else {
       super.checkAndPut(dataList, routeMeta, intentData, circuitBreakerSettings, handler);
     }
