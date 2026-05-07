@@ -486,14 +486,14 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
             PipelinedClientMetricsPublisher.BATCH_CAS_FALLBACK), executor);
       }
 
-      future.whenCompleteAsync((results, error) -> {
+      future.whenComplete((results, error) -> {
         boolean isStale = results != null
             && !results.stream().filter(result -> !(sites.get(0).equals(result.getSite()))).collect(Collectors.toList())
                 .isEmpty();
         handler.accept(new PipelinedResponse<>(results, isStale), error);
         publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_CAS_COMPLETE);
         timer.close();
-      }, executor);
+      });
     } catch (NoSiteAvailableToHandleException | PipelinedStoreDataCorruptException ex) {
       handler.accept(null, ex);
       publisher.incrementMetric(PipelinedClientMetricsPublisher.BATCH_CAS_NO_SITES);

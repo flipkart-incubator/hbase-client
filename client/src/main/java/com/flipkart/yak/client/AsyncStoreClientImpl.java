@@ -410,19 +410,11 @@ public class AsyncStoreClientImpl implements AsyncStoreClient {
   }
 
   /**
-   * Executes multiple independent check-and-put (CAS) operations as a single HBase batch RPC via
-   * {@code AsyncTable.checkAndMutate(List)}. Intended for use by the pipelined master/slave store only;
-   * this method is not part of the {@link AsyncStoreClient} public contract.
+   * {@inheritDoc}
    *
    * <p>Each item in {@code dataList} is evaluated independently: the put is applied only if its
    * check passes. Index entries are written per-row only when the CAS for that row succeeds,
    * preventing orphaned index entries on check failure.
-   *
-   * @param dataList The list of {@link CheckAndStoreData} describing what to check and put per row.
-   *                 All rows must belong to the same table.
-   * @return A positionally-aligned {@link List} of {@link CompletableFuture}{@code <Boolean>};
-   *         each future resolves to {@code true} if that row's CAS succeeded, {@code false} if the
-   *         check failed, or completes exceptionally on infrastructure error.
    */
   @Override
   @SuppressWarnings({"java:S1612", "java:S3776"})
@@ -466,7 +458,7 @@ public class AsyncStoreClientImpl implements AsyncStoreClient {
     dataList.stream().forEachOrdered(data -> {
       AsyncStoreClientUtis.StorePuts storePuts = AsyncStoreClientUtis.buildStorePuts(data, keyDistributorPerTable, durability);
       indexPutsPerRow.add(storePuts.indexPuts);
-      checkAndMutates.add(AsyncStoreClientUtis.buildCheckAndMutateForPut(data, keyDistributorPerTable, durability));
+      checkAndMutates.add(AsyncStoreClientUtis.buildCheckAndMutateForPut(storePuts, data.getVerifyData()));
     });
     List<StoreData> validationList = new ArrayList<StoreData>(dataList);
     payloadValidator.validate(validationList)

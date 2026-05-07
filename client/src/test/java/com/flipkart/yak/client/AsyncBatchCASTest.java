@@ -153,6 +153,21 @@ public class AsyncBatchCASTest extends AsyncBaseTest {
     }
   }
 
+  @Test public void testBatchCASIfNotExists() throws ExecutionException, InterruptedException {
+    CheckAndStoreData ifNotExistsData = new StoreDataBuilder(FULL_TABLE_NAME).withRowKey(rowKey1.getBytes())
+        .addColumn(columnFamily, columnQualifier, "newVal".getBytes())
+        .buildWithCheckAndVerifyColumn(columnFamily, columnQualifier, null);
+    List<CheckAndStoreData> ifNotExistsList = Arrays.asList(ifNotExistsData);
+
+    CheckAndMutateResult successResult = mockResult(true);
+    when(table.checkAndMutate(anyList()))
+        .thenReturn(Arrays.asList(CompletableFuture.completedFuture(successResult)));
+
+    List<CompletableFuture<Boolean>> futures = storeClient.checkAndPut(ifNotExistsList);
+    assertEquals("Should return one future", 1, futures.size());
+    assertTrue("ifNotExists CAS should succeed", futures.get(0).get());
+  }
+
   @Test public void testBatchCASTableNameValidationFailure() throws Exception {
     CheckAndStoreData wrongTable = new StoreDataBuilder(FULL_TABLE_NAME + "_other")
         .withRowKey(rowKey1.getBytes())

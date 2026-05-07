@@ -169,10 +169,7 @@ public class AsyncStoreClientUtis {
     return batchActions;
   }
 
-  static CheckAndMutate buildCheckAndMutateForPut(CheckAndStoreData data, Map<String, KeyDistributor> keyDistributorPerTable,
-                                                   Optional<Durability> durability) {
-    StorePuts storePuts = buildStorePuts(data, keyDistributorPerTable, durability);
-    CheckVerifyData vdata = data.getVerifyData();
+  static CheckAndMutate buildCheckAndMutateForPut(StorePuts storePuts, CheckVerifyData vdata) {
     byte[] rowKey = storePuts.entityPut.getRow();
 
     CheckAndMutate.Builder builder;
