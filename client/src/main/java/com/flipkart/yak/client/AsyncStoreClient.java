@@ -140,20 +140,6 @@ public interface AsyncStoreClient {
   public CompletableFuture<Void> batch(BatchData data);
 
   /**
-   * Atomically checks and puts multiple rows in batch. Each item independently checks its row/family/qualifier
-   * against the expected value and performs the put only if the check passes. The batch check-and-put is done by
-   * aggregating the operations at the client-side for a single RPC call.
-   *
-   * @param dataList The list of {@link CheckAndStoreData} objects specifying what to check and put per row.
-   *
-   * @return The {@link List} of {@link CompletableFuture} async objects that return true if the CAS operation
-   * succeeded for that row, false if the check failed, and exception if any other failure.
-   *
-   * @since 5.3.0
-   */
-  public List<CompletableFuture<Boolean>> checkAndPut(List<CheckAndStoreData> dataList);
-
-  /**
    * Deletes some data in the table, in batch. This can be used for group commit, or for submitting user defined
    * batches.
    *

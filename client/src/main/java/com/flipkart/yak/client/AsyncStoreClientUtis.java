@@ -175,11 +175,13 @@ public class AsyncStoreClientUtis {
     CheckVerifyData vdata = data.getVerifyData();
     byte[] rowKey = storePuts.entityPut.getRow();
 
-    CheckAndMutate.Builder builder = CheckAndMutate.newBuilder(rowKey)
-        .ifEquals(vdata.getCf().getBytes(), vdata.getQualifier().getBytes(), vdata.getData());
+    CheckAndMutate.Builder builder;
     if (vdata.getData() == null) {
       builder = CheckAndMutate.newBuilder(rowKey)
           .ifNotExists(vdata.getCf().getBytes(), vdata.getQualifier().getBytes());
+    } else {
+      builder = CheckAndMutate.newBuilder(rowKey)
+          .ifEquals(vdata.getCf().getBytes(), vdata.getQualifier().getBytes(), vdata.getData());
     }
     return builder.build(storePuts.entityPut);
   }

@@ -93,7 +93,7 @@ public class AsyncStoreClientImpl implements AsyncStoreClient {
     this.durability = Optional.ofNullable(siteConfig.getDurabilityThreshold());
     this.registry = registry;
     this.requestValidators =
-        new RequestValidatorsImpl(siteConfig.getMaxBatchGetSize(), siteConfig.getMaxBatchDeleteSize());
+        new RequestValidatorsImpl(siteConfig.getMaxBatchGetSize(), siteConfig.getMaxBatchDeleteSize(), siteConfig.getMaxBatchCheckAndPutSize());
 
     this.publisher =
         new StoreClientMetricsPublisher(this.registry, METRIC_PREFIX_KEY + siteConfig.getStoreName() + ".");
@@ -410,10 +410,22 @@ public class AsyncStoreClientImpl implements AsyncStoreClient {
   }
 
   /**
-   * {@inheritDoc}
+   * Executes multiple independent check-and-put (CAS) operations as a single HBase batch RPC via
+   * {@code AsyncTable.checkAndMutate(List)}. Intended for use by the pipelined master/slave store only;
+   * this method is not part of the {@link AsyncStoreClient} public contract.
+   *
+   * <p>Each item in {@code dataList} is evaluated independently: the put is applied only if its
+   * check passes. Index entries are written per-row only when the CAS for that row succeeds,
+   * preventing orphaned index entries on check failure.
+   *
+   * @param dataList The list of {@link CheckAndStoreData} describing what to check and put per row.
+   *                 All rows must belong to the same table.
+   * @return A positionally-aligned {@link List} of {@link CompletableFuture}{@code <Boolean>};
+   *         each future resolves to {@code true} if that row's CAS succeeded, {@code false} if the
+   *         check failed, or completes exceptionally on infrastructure error.
    */
   @SuppressWarnings({"java:S1612", "java:S3776"})
-  @Override public List<CompletableFuture<Boolean>> checkAndPut(List<CheckAndStoreData> dataList) {
+  public List<CompletableFuture<Boolean>> batchCheckAndPutForPipelined(List<CheckAndStoreData> dataList) {
     publisher.updateThreadCounter(executor.getActiveCount(), executor.getQueue().size(), executor.getPoolSize());
     Timer.Context timer = publisher.getTimer(StoreClientMetricsPublisher.BATCH_CAS_TIMER);
     publisher.incrementMetric(StoreClientMetricsPublisher.BATCH_CAS_INIT);
@@ -426,7 +438,7 @@ public class AsyncStoreClientImpl implements AsyncStoreClient {
             .whenCompleteAsync((v, e) -> {
       publisher.incrementMetric(StoreClientMetricsPublisher.BATCH_CAS_COMPLETE);
       timer.close();
-    });
+    }, executor);
 
     if (dataList.isEmpty()) {
       return responseFutures;
@@ -438,6 +450,7 @@ public class AsyncStoreClientImpl implements AsyncStoreClient {
     CheckAndStoreData firstRow = dataList.get(0);
     try {
       requestValidators.validateTableName(firstRow.getTableName(), dataList);
+      requestValidators.validateBatchCheckAndPutSize(dataList);
     } catch (RequestValidatorException ex) {
       responseFutures.stream().forEach(future -> future.completeExceptionally(ex));
       LOG.error("Failed batch check and put query with batch size: {}", dataList.size());
@@ -446,26 +459,28 @@ public class AsyncStoreClientImpl implements AsyncStoreClient {
     }
 
     List<CheckAndMutate> checkAndMutates = new ArrayList<>();
-    List<Put> indexPuts = new ArrayList<>();
+    // Keep index puts per-row so we can write them only for rows where CAS succeeds,
+    // avoiding orphaned index entries when the check fails.
+    List<List<Put>> indexPutsPerRow = new ArrayList<>();
     dataList.stream().forEachOrdered(data -> {
       AsyncStoreClientUtis.StorePuts storePuts = AsyncStoreClientUtis.buildStorePuts(data, keyDistributorPerTable, durability);
-      indexPuts.addAll(storePuts.indexPuts);
+      indexPutsPerRow.add(storePuts.indexPuts);
       checkAndMutates.add(AsyncStoreClientUtis.buildCheckAndMutateForPut(data, keyDistributorPerTable, durability));
     });
     List<StoreData> validationList = new ArrayList<StoreData>(dataList);
     payloadValidator.validate(validationList)
-        .thenComposeAsync(value -> updateIndexesIfPresent(firstRow.getIndexTableName(), indexPuts), executor)
         .thenComposeAsync(value -> CompletableFuture.runAsync(() -> {
           if (LOG.isDebugEnabled()) {
             LOG.debug("Building batch check and put query with batch size: {}", dataList.size());
           }
           AsyncTable table = connection.getTable(TableName.valueOf(firstRow.getTableName()));
           List<CompletableFuture<CheckAndMutateResult>> futures = table.checkAndMutate(checkAndMutates);
-          Iterator<CompletableFuture<Boolean>> iterator = responseFutures.iterator();
-          futures.stream().forEachOrdered(future -> {
+          for (int i = 0; i < futures.size(); i++) {
+            final int idx = i;
             CompletableFuture<Boolean> responseFuture =
-                (iterator.hasNext()) ? iterator.next() : (new CompletableFuture<Boolean>());
-            future.whenCompleteAsync((result, error) -> {
+                (idx < responseFutures.size()) ? responseFutures.get(idx) : new CompletableFuture<>();
+            final List<Put> rowIndexPuts = indexPutsPerRow.get(idx);
+            futures.get(i).whenCompleteAsync((result, error) -> {
               if (error != null) {
                 error = (error instanceof CompletionException) ? error.getCause() : error;
                 responseFuture.completeExceptionally(error);
@@ -473,16 +488,22 @@ public class AsyncStoreClientImpl implements AsyncStoreClient {
                 publisher.incrementErrorMetric(StoreClientMetricsPublisher.BATCH_CAS_GEN_EXCEPTION, error);
               } else {
                 responseFuture.complete(result.isSuccess());
+                if (result.isSuccess()) {
+                  updateIndexesIfPresent(firstRow.getIndexTableName(), rowIndexPuts);
+                }
               }
               if (LOG.isDebugEnabled()) {
                 LOG.debug("Completed batch check and put query with batch size: {}", dataList.size());
               }
             }, executor);
-          });
+          }
         })).whenCompleteAsync((value, error) -> {
-      responseFutures.stream().forEach(future -> future.completeExceptionally(error));
-      publisher.incrementErrorMetric(StoreClientMetricsPublisher.BATCH_CAS_GEN_EXCEPTION, error);
-    });
+      if (error != null) {
+        Throwable cause = (error instanceof CompletionException) ? error.getCause() : error;
+        responseFutures.forEach(future -> future.completeExceptionally(cause));
+        publisher.incrementErrorMetric(StoreClientMetricsPublisher.BATCH_CAS_GEN_EXCEPTION, error);
+      }
+    }, executor);
     return responseFutures;
   }
 

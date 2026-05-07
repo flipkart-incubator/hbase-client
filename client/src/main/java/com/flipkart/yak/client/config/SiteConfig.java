@@ -17,6 +17,7 @@ public class SiteConfig implements Serializable {
   private String storeName;
   private int maxBatchGetSize = 20;
   private int maxBatchDeleteSize = 20;
+  private int maxBatchCheckAndPutSize = 20;
   private Optional<String> hadoopUserName = Optional.empty();
 
   public int getPoolSize() {
@@ -87,6 +88,15 @@ public class SiteConfig implements Serializable {
     return this;
   }
 
+  public int getMaxBatchCheckAndPutSize() {
+    return maxBatchCheckAndPutSize;
+  }
+
+  public SiteConfig withMaxBatchCheckAndPutSize(int maxBatchCheckAndPutSize) {
+    this.maxBatchCheckAndPutSize = maxBatchCheckAndPutSize;
+    return this;
+  }
+
   public Optional<String> getHadoopUserName() {
     return hadoopUserName;
   }
@@ -101,11 +111,11 @@ public class SiteConfig implements Serializable {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     SiteConfig that = (SiteConfig) o;
-    return poolSize == that.poolSize && indexPurgeQueueSize == that.indexPurgeQueueSize && maxBatchGetSize == that.maxBatchGetSize && maxBatchDeleteSize == that.maxBatchDeleteSize && Objects.equals(hbaseConfig, that.hbaseConfig) && durabilityThreshold == that.durabilityThreshold && Objects.equals(storeName, that.storeName) && Objects.equals(hadoopUserName, that.hadoopUserName);
+    return poolSize == that.poolSize && indexPurgeQueueSize == that.indexPurgeQueueSize && maxBatchGetSize == that.maxBatchGetSize && maxBatchDeleteSize == that.maxBatchDeleteSize && maxBatchCheckAndPutSize == that.maxBatchCheckAndPutSize && Objects.equals(hbaseConfig, that.hbaseConfig) && durabilityThreshold == that.durabilityThreshold && Objects.equals(storeName, that.storeName) && Objects.equals(hadoopUserName, that.hadoopUserName);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(poolSize, hbaseConfig, indexPurgeQueueSize, durabilityThreshold, storeName, maxBatchGetSize, maxBatchDeleteSize, hadoopUserName);
+    return Objects.hash(poolSize, hbaseConfig, indexPurgeQueueSize, durabilityThreshold, storeName, maxBatchGetSize, maxBatchDeleteSize, maxBatchCheckAndPutSize, hadoopUserName);
   }
 }

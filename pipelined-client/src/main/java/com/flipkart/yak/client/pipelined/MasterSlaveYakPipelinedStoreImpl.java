@@ -265,6 +265,35 @@ public class MasterSlaveYakPipelinedStoreImpl<T, U extends IntentWriteRequest, V
             data.stream().map(d -> (new StoreOperationResponse<W>(null, new SiteNotAvailable(), site)))
                 .collect(Collectors.toList()));
       }
+      if (BATCH_CHECK_PUT_METHOD_NAME.equals(method)) {
+        AsyncStoreClient client = clients.get(site);
+        if (!(client instanceof AsyncStoreClientImpl)) {
+          IllegalStateException ex = new IllegalStateException("Batch check-and-put requires AsyncStoreClientImpl");
+          return CompletableFuture.completedFuture(
+              data.stream().map(d -> new StoreOperationResponse<W>(null, ex, site)).collect(Collectors.toList()));
+        }
+        try {
+          @SuppressWarnings("unchecked")
+          List<CheckAndStoreData> casList = (List<CheckAndStoreData>) data;
+          List<CompletableFuture<Boolean>> rawFutures =
+              ((AsyncStoreClientImpl) client).batchCheckAndPutForPipelined(casList);
+          List<CompletableFuture<StoreOperationResponse<W>>> futures = rawFutures.stream().map(future -> future.handleAsync((value, error) -> {
+            if (error != null && !(error instanceof StoreDataNotFoundException)) {
+              LOG.error("Failed to {}, site: {}, error: {}", method, site, error.getMessage());
+            } else if (error == null) {
+              LOG.debug("Successful {}, site: {}", method, site);
+            }
+            @SuppressWarnings("unchecked")
+            W wrapped = (W) value;
+            return new StoreOperationResponse<>(wrapped, error, site);
+          }, executor)).collect(Collectors.toList());
+          return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).thenApplyAsync(
+              v -> futures.stream().map(future -> future.join()).collect(Collectors.toList()));
+        } catch (Exception ex) {
+          return CompletableFuture.completedFuture(
+              data.stream().map(d -> new StoreOperationResponse<W>(null, ex, site)).collect(Collectors.toList()));
+        }
+      }
       try {
         List<CompletableFuture<StoreOperationResponse<W>>> futures = (
             (List<CompletableFuture<W>>) AsyncStoreClient.class.getMethod(method, List.class)
