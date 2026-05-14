@@ -11,7 +11,7 @@
     <parent>
         <artifactId>client-modules</artifactId>
         <groupId>com.flipkart.yak</groupId>
-        <version>5.2.1</version>
+        <version>5.2.2</version>
     </parent>
 
     <artifactId>client</artifactId>
@@ -194,6 +194,10 @@
                                 </excludes>
                             </artifactSet>
                             <relocations>
+                                <relocation>
+                                    <pattern>org.apache.avro</pattern>
+                                    <shadedPattern>${shaded.prefix}.org.apache.avro</shadedPattern>
+                                </relocation>
                                 <relocation>
                                     <pattern>com.google</pattern>
                                     <shadedPattern>${shaded.prefix}.com.google</shadedPattern>
