@@ -28,6 +28,25 @@ public class ScanData {
   private List<ColTupple> columnfamilies = new ArrayList<>();
   private final String tableName;
   private byte[] partitionKey;
+  private boolean includeStopRow = false;
+  private boolean includeStartRow = true;
+
+  public boolean shouldIncludeStopRow() {
+      return includeStopRow;
+  }
+
+  public void setIncludeStopRow(boolean includeStopRow) {
+      this.includeStopRow = includeStopRow;
+  }
+
+  public boolean shouldIncludeStartRow() {
+      return includeStartRow;
+  }
+
+  public void setIncludeStartRow(boolean includeStartRow) {
+      this.includeStartRow = includeStartRow;
+  }
+
 
   public ScanData(String tableName) {
     this.tableName = tableName;
